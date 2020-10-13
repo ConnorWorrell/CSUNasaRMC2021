@@ -38,7 +38,7 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
         E1_Error = E1 + TurningDirection * 2 * math.pi * (- TurningDirection * Robot_Width / 2) * (Angle_Delta / 360)
         E2_Error = E2 + TurningDirection * 2 * math.pi * (+ TurningDirection * Robot_Width / 2) * (Angle_Delta / 360)
 
-    elif(x_rot == 0):
+    elif(abs(x_rot) < .00001):
         if(Visuals):
             print("Robot Drives Straight")
         # R is infinite, and robot is attempting to drive straight forward
@@ -78,6 +78,9 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
         if(y_rot != 0):
             TurningDirection = math.degrees(math.atan(x_rot/y_rot))
             # print(TurningDirection)
+        elif(x_rot != 0):
+            TurningDirection = 90-math.degrees(math.atan(y_rot/x_rot))
+            # print(TurningDirection)
 
         elif(x_rot > 0):
             TurningDirection = 90
@@ -88,6 +91,8 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
             TurningDirection = TurningDirection + 180
         if(TurningDirection > 180):
             TurningDirection = TurningDirection - 360
+        if(E1+E2<0):
+            TurningDirection = -TurningDirection
 
         #Fix this broken shit Angle_Delta calculation dosen't work at all
         # if(y_rot == 0):
@@ -101,7 +106,8 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
 
 
         TurningDirection = np.sign(TurningDirection)
-        # print(TurningDirection)
+        if(Visuals):
+            print("Turning Direction: " + str(TurningDirection))
 
         # Fix this broken shit Angle_Delta calculation dosen't work at all
         # Angle_Delta = TurningDirection * ((E1 + E2) / 2) * 360 / (2 * math.pi * R)
@@ -109,24 +115,34 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
 
         CircleCenter_x = TurningDirection*abs(R)
         # print("Circle Center x: " + str(CircleCenter_x))
-
+        # print(x_rot)
+        # print(y_rot)
+        # print(R)
         #Turning Left
         if(TurningDirection == -1):
-            if (CircleCenter_x < x_rot and y_rot >= 0):
+            if (CircleCenter_x < x_rot and y_rot >= 0 and abs(x_rot) != R):
                 Angle_Delta = -math.degrees(math.atan(abs(y_rot) / (-abs(x_rot) + R)))
+            elif (CircleCenter_x <= x_rot and y_rot > 0):
+                Angle_Delta = 90 + math.degrees(math.atan((-abs(x_rot) + R) / abs(y_rot)))
             elif (CircleCenter_x >= x_rot and y_rot > 0):
                 Angle_Delta = -math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) - 90
-            elif (CircleCenter_x > x_rot and y_rot <= 0):
+            elif (CircleCenter_x > x_rot and y_rot <= 0 and abs(x_rot) != R):
                 Angle_Delta = -math.degrees(math.atan(abs(y_rot) / (abs(x_rot) - R))) - 180
+            elif (CircleCenter_x >= x_rot and y_rot < 0):
+                Angle_Delta = 90 + math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) - 180
             elif (CircleCenter_x <= x_rot and y_rot < 0):
                 Angle_Delta = -math.degrees(math.atan((R - abs(x_rot)) / abs(y_rot))) - 270
         elif(TurningDirection == 1):
-            if (CircleCenter_x > x_rot and y_rot >= 0):
+            if (CircleCenter_x > x_rot and y_rot >= 0 and abs(x_rot) != R):
                 Angle_Delta = math.degrees(math.atan(abs(y_rot) / (-abs(x_rot) + R)))
+            elif (CircleCenter_x >= x_rot and y_rot > 0):
+                Angle_Delta = 90-math.degrees(math.atan((-abs(x_rot) + R) / abs(y_rot)))
             elif (CircleCenter_x <= x_rot and y_rot > 0):
                 Angle_Delta = math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) + 90
-            elif (CircleCenter_x < x_rot and y_rot <= 0):
+            elif (CircleCenter_x < x_rot and y_rot <= 0 and abs(x_rot) != R):
                 Angle_Delta = math.degrees(math.atan(abs(y_rot) / (abs(x_rot) - R))) + 180
+            elif (CircleCenter_x <= x_rot and y_rot < 0):
+                Angle_Delta = 90 - math.degrees(math.atan( (abs(x_rot) - R)/ abs(y_rot))) + 180
             elif (CircleCenter_x >= x_rot and y_rot < 0):
                 Angle_Delta = math.degrees(math.atan((R - abs(x_rot)) / abs(y_rot))) + 270
 
@@ -135,23 +151,49 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
         if(Visuals):
             print("Angle Delta: " + str(Angle_Delta))
 
-        Circles= abs(E1/(math.pi*Robot_Width*(1-(E1+E2)/(E2-E1))))
-        CircleLeftover = Circles-math.floor(Circles)
-        if(Visuals):
-            print("Circle Leftovers: " + str(CircleLeftover))
+        # Circles= abs(E1/(math.pi*Robot_Width*(1-(E1+E2)/(E2-E1))))
+        # CircleLeftover = Circles-math.floor(Circles)
+        # WholeCircles = math.floor(Circles)
+        # if(Visuals):
+        #     print("Circles: " + str(Circles))
+        #     print("Whole Circles: " + str(WholeCircles))
+        #     print("Circle Leftovers: " + str(CircleLeftover))
 
-        E1_Error = abs(E1*CircleLeftover-TurningDirection*2*math.pi*(R+TurningDirection*Robot_Width/2)*(Angle_Delta)/360)#,abs(E1-TurningDirection*2*math.pi*(R+TurningDirection*Robot_Width/2)*(Angle_Delta-360)/360))
-        E2_Error = abs(E2*CircleLeftover-TurningDirection*2 * math.pi * (R - TurningDirection*Robot_Width / 2) * (Angle_Delta / 360))#,abs(E2-TurningDirection*2 * math.pi * (R - TurningDirection*Robot_Width / 2) * (Angle_Delta-360) / 360))
+        # DistanceDriven1 = np.sign(Angle_Delta)*Circles*TurningDirection*2*math.pi*(R+TurningDirection*Robot_Width/2)#*(Angle_Delta)/360
+        # DistanceDriven2 = np.sign(Angle_Delta)*Circles*TurningDirection*2 * math.pi * (R - TurningDirection*Robot_Width / 2)# * (Angle_Delta / 360)
+
+        if(CircleCenter_x < 0):
+            InsideWheel = 1
+            if(Visuals):
+                print("Leftside is inside wheel")
+        else:
+            InsideWheel = -1
+            if(Visuals):
+                print("Rightside is inside wheel")
+
+        DistanceDriven1 = 2*TurningDirection*math.pi*(R-InsideWheel*Robot_Width/2)*(Angle_Delta)/360#,abs(E1-TurningDirection*2*math.pi*(R+TurningDirection*Robot_Width/2)*(Angle_Delta-360)/360))
+        DistanceDriven2 = 2*TurningDirection * math.pi * (R + InsideWheel*Robot_Width / 2) * (Angle_Delta / 360)#,abs(E2-TurningDirection*2 * math.pi * (R - TurningDirection*Robot_Width / 2) * (Angle_Delta-360) / 360))
+
+        E1_Error = abs(E1-DistanceDriven1)#,abs(E1-TurningDirection*2*math.pi*(R+TurningDirection*Robot_Width/2)*(Angle_Delta-360)/360))
+        E2_Error = abs(E2-DistanceDriven2)#,abs(E2-TurningDirection*2 * math.pi * (R - TurningDirection*Robot_Width / 2) * (Angle_Delta-360) / 360))
 
     # print(abs(E1-TurningDirection*2*math.pi*(R+TurningDirection*Robot_Width/2)*(Angle_Delta-360)/360))
     # print(TurningDirection*2 * math.pi * (R - TurningDirection*Robot_Width / 2) * (Angle_Delta / 360))
     if(Visuals):
+        try:
+            print("Distance Driven 1: " + str(DistanceDriven1))
+        except:
+            pass
+        try:
+            print("Distance Driven 2: " + str(DistanceDriven2))
+        except:
+            pass
         print("Error E1: " + str(E1_Error))
         print("Error E2: " + str(E2_Error))
 
-    Rot_Error = Angle_Delta+Angle_Start-Angle_Box
+    # Rot_Error = Angle_Delta+Angle_Start
     if(Visuals):
-        print("Rot Error: " + str(Rot_Error))
+        # print("Rot Error: " + str(Rot_Error))
         print("Angle Delta: " + str(Angle_Delta))
     # print(Angle_Box)
 

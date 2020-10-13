@@ -2,8 +2,9 @@ from FullStack import Calculate
 import time
 import numpy as np
 import random
+import math
 
-Trials = 1000
+Trials = math.floor(360/20)
 
 Competiton_Zone_Width = 6
 Competiton_Zone_Height = 6
@@ -16,17 +17,24 @@ Angle_Zones = int(360/AngleSplit)
 StartingMap = np.zeros((int(Competiton_Zone_Height_Zones),int(Competiton_Zone_Width_Zones),Angle_Zones))
 # StartingMap[int(Competiton_Zone_Height_Zones/2),int(Competiton_Zone_Width_Zones/2),0]=1
 
+IssuesList = []
+
+Test = 4
+
 StartTime = time.perf_counter()
 for i in range(Trials):
     RandomRotationStart = np.zeros((int(Competiton_Zone_Height_Zones),int(Competiton_Zone_Width_Zones),Angle_Zones))
-    E1_rand = random.uniform(-4,4)
-    E2_rand = random.uniform(-4,4)
-    Rotation_rand = random.randint(0,359)
+    E1_rand = [1, 1.5,-1,-1.5,random.uniform(-2.5,2.5)]#
+    E2_rand = [1, 1,-1,-1,random.uniform(-2.5,2.5)]#random.uniform(-4,4)
+    Rotation_rand = math.floor(i*20)#random.randint(0,359)
     RandomRotationStart[int(Competiton_Zone_Height_Zones / 2), int(Competiton_Zone_Width_Zones / 2), Rotation_rand] = 1
-    [Out1, Max_Prob] = Calculate(E1_rand, E2_rand, RandomRotationStart, Visuals=0)
-    print([E1_rand,E2_rand,float(Rotation_rand), Max_Prob])
+    [Out1, Max_Prob] = Calculate(E1_rand[Test], E2_rand[Test], RandomRotationStart, Visuals=1)
+    print([E1_rand[Test],E2_rand[Test],float(Rotation_rand), Max_Prob])
+    if(Max_Prob < 1):
+        IssuesList.append([E1_rand[Test],E2_rand[Test],float(Rotation_rand), Max_Prob])
 TrialTimes = (time.perf_counter()-StartTime)/Trials
 print(TrialTimes)
+print(IssuesList)
 
 # Notes:
-# Initial:
+# Initial: 1.6755
