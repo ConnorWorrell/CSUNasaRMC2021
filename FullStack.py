@@ -89,7 +89,7 @@ def Calculate(E1,E2,Prob_Zone_Old, Visuals = True):
 
     if(Visuals != 0):
         if(Visuals > 1):
-            maxvaluehalved = np.max(ProbabilityZone_New)/2
+            maxvaluehalved = np.max(ProbabilityZone_New)/5
             for x_old in range(Competiton_Zone_Width_Zones):
                 for y_old in range(Competiton_Zone_Height_Zones):
                     for Angle_old in range(Angle_Zones-1):
@@ -98,6 +98,7 @@ def Calculate(E1,E2,Prob_Zone_Old, Visuals = True):
 
         if(Visuals > 0):
             ProbabilityZone_New = ProbabilityZone_New*(1/np.max(ProbabilityZone_New))
+            ProbabilityZone_New[int(Competiton_Zone_Height_Zones/2),int(Competiton_Zone_Width_Zones/2),0]=10
             imgdata = np.sum(ProbabilityZone_New*255,2)
             img = Image.fromarray(imgdata)
             img = img.resize((100*Competiton_Zone_Width,100*Competiton_Zone_Height),Image.NEAREST)

@@ -40,7 +40,7 @@ Competiton_Zone_Width_Zones = int(Competiton_Zone_Width/Split)
 Competiton_Zone_Height_Zones = int(Competiton_Zone_Height/Split)
 Angle_Zones = int(360/AngleSplit)
 
-Issues = [[0.009460833003868352, -0.08777827442072406, 240.0, 15.904541406185983]]
+Issues = [[-1, -1, 0.0, 3.978873577297384]]
 
 StartingMap = np.zeros((int(Competiton_Zone_Height_Zones),int(Competiton_Zone_Width_Zones),Angle_Zones))
 StartingMap[int(Competiton_Zone_Height_Zones/2),int(Competiton_Zone_Width_Zones/2),int(Issues[Count][2])]=1
@@ -50,8 +50,8 @@ Calculate(Issues[0][0],Issues[0][1],StartingMap, Visuals = 2)
 # Y:-3.0500000000000003 X:3.0 A:314 P:2.522088074496643e-122
 
 # [prob,turn] = ProbabilityCalculator(3.0, -3.0, 0, 3.1, -2.0, 0, 1, 1, 0.5, Visuals=True)
-# [prob,turn] = ProbabilityCalculator(3.0, -3.0, 0, 2.4000000000000004, -1.9500000000000002, 0, 1.5, 1, 0.5, Visuals=True)
-# print("Probability: " + str(prob))
+[prob,turn] = ProbabilityCalculator(3.0, -3.0, 0, 3.05, -4.0, 0, -1, -1, 0.5, Visuals=True)
+print("Probability: " + str(prob))
 
 # CircleCenter_x = .5
 # R = .5

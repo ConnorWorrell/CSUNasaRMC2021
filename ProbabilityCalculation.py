@@ -9,8 +9,8 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
     if(Angle_Box > 180):
         Angle_Box = Angle_Box-360
 
-    Sigma_E1 = .1 #Meters
-    Sigma_E2 = .1 #Meters
+    Sigma_E1 = .2 #Meters
+    Sigma_E2 = .2 #Meters
     Sigma_Rot = 2 #Degrees
 
     Angle_Start_rad = math.radians(Angle_Start)
@@ -47,9 +47,12 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
         # E1_Error = E1 - Distance
         # E2_Error = E2 - Distance
 
-        E1_Error = math.sqrt((X_Box-X_Start-E1*math.sin(Angle_Start_rad))**2+(Y_Box-Y_Start-E1*math.cos(Angle_Start_rad))**2)
-        E2_Error = math.sqrt((X_Box - X_Start - E2 * math.sin(Angle_Start_rad)) ** 2 + (
-                    Y_Box - Y_Start - E2 * math.cos(Angle_Start_rad)) ** 2)
+        DriveDistance_y = np.sign(y_rot)*math.sqrt((X_Box-X_Start)**2+(Y_Box-Y_Start)**2)
+        if(Visuals):
+            print("Drive Distance: " + str(DriveDistance_y))
+
+        E1_Error = E1-DriveDistance_y
+        E2_Error = E2-DriveDistance_y
 
         # print('hi')
     else:
@@ -82,17 +85,22 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
             TurningDirection = 90-math.degrees(math.atan(y_rot/x_rot))
             # print(TurningDirection)
 
-        elif(x_rot > 0):
-            TurningDirection = 90
-        else:
-            TurningDirection = -90
+
+
+        # elif(x_rot > 0):
+        #     TurningDirection = 90
+        # else:
+        #     TurningDirection = -90
+
+        # print(TurningDirection)
 
         if(y_rot < 0):
             TurningDirection = TurningDirection + 180
         if(TurningDirection > 180):
             TurningDirection = TurningDirection - 360
-        if(E1+E2<0):
+        if(E1<0 and E2<0):
             TurningDirection = -TurningDirection
+
 
         #Fix this broken shit Angle_Delta calculation dosen't work at all
         # if(y_rot == 0):
@@ -106,6 +114,18 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
 
 
         TurningDirection = np.sign(TurningDirection)
+
+        if(E1 < 0 and E2 < 0 and E1 > E2):
+            TurningDirection = -TurningDirection # Case where backing up to the left
+        elif(E1 < 0 and E2 < 0 and E1 < E2):
+            TurningDirection = -TurningDirection # Case where backing up to the right
+
+        # if(y_rot == 0 and abs(E1) > abs(E2)):
+        #     TurningDirection = np.sign(E1)
+        # elif(y_rot == 0 and abs(E1) < abs (E2)):
+        #     print('hi')
+        #     TurningDirection = -np.sign(E2)
+
         if(Visuals):
             print("Turning Direction: " + str(TurningDirection))
 
@@ -113,41 +133,67 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
         # Angle_Delta = TurningDirection * ((E1 + E2) / 2) * 360 / (2 * math.pi * R)
         # print(Angle_Delta)
 
-        CircleCenter_x = TurningDirection*abs(R)
-        # print("Circle Center x: " + str(CircleCenter_x))
+        # CircleCenter_x = TurningDirection*abs(R)
+        #CircleCenterX cannot be based off the turning direction
+        CircleCenter_x = abs(R)*np.sign(x_rot)
+        if(Visuals):
+            print("Circle Center x: " + str(CircleCenter_x))
         # print(x_rot)
         # print(y_rot)
+
+        if(E1 ==E2 and E2 < 0):
+            Backing = -1
+        else:
+            Backing = 1
+
         # print(R)
         #Turning Left
-        if(TurningDirection == -1):
+        if((TurningDirection*Backing == -1)):
             if (CircleCenter_x < x_rot and y_rot >= 0 and abs(x_rot) != R):
                 Angle_Delta = -math.degrees(math.atan(abs(y_rot) / (-abs(x_rot) + R)))
+                if (Visuals): print("Case 1")
             elif (CircleCenter_x <= x_rot and y_rot > 0):
-                Angle_Delta = 90 + math.degrees(math.atan((-abs(x_rot) + R) / abs(y_rot)))
+                Angle_Delta = -90 + math.degrees(math.atan((-abs(x_rot) + R) / abs(y_rot)))
+                if (Visuals): print("Case 2")
             elif (CircleCenter_x >= x_rot and y_rot > 0):
                 Angle_Delta = -math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) - 90
+                if (Visuals): print("Case 3")
             elif (CircleCenter_x > x_rot and y_rot <= 0 and abs(x_rot) != R):
                 Angle_Delta = -math.degrees(math.atan(abs(y_rot) / (abs(x_rot) - R))) - 180
+                if (Visuals): print("Case 4")
             elif (CircleCenter_x >= x_rot and y_rot < 0):
-                Angle_Delta = 90 + math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) - 180
+                Angle_Delta = -90 + math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) - 180
+                if (Visuals): print("Case 5")
             elif (CircleCenter_x <= x_rot and y_rot < 0):
                 Angle_Delta = -math.degrees(math.atan((R - abs(x_rot)) / abs(y_rot))) - 270
-        elif(TurningDirection == 1):
+                if (Visuals): print("Case 6")
+        elif((TurningDirection*Backing == 1)):
             if (CircleCenter_x > x_rot and y_rot >= 0 and abs(x_rot) != R):
                 Angle_Delta = math.degrees(math.atan(abs(y_rot) / (-abs(x_rot) + R)))
+                if (Visuals): print("Case 7")
             elif (CircleCenter_x >= x_rot and y_rot > 0):
-                Angle_Delta = 90-math.degrees(math.atan((-abs(x_rot) + R) / abs(y_rot)))
+                Angle_Delta = 90 - math.degrees(math.atan((-abs(x_rot) + R) / abs(y_rot)))
+                if (Visuals): print("Case 8")
             elif (CircleCenter_x <= x_rot and y_rot > 0):
                 Angle_Delta = math.degrees(math.atan((abs(x_rot) - R) / abs(y_rot))) + 90
+                if (Visuals): print("Case 9")
             elif (CircleCenter_x < x_rot and y_rot <= 0 and abs(x_rot) != R):
                 Angle_Delta = math.degrees(math.atan(abs(y_rot) / (abs(x_rot) - R))) + 180
+                if (Visuals): print("Case 10")
             elif (CircleCenter_x <= x_rot and y_rot < 0):
                 Angle_Delta = 90 - math.degrees(math.atan( (abs(x_rot) - R)/ abs(y_rot))) + 180
+                if (Visuals): print("Case 11")
             elif (CircleCenter_x >= x_rot and y_rot < 0):
                 Angle_Delta = math.degrees(math.atan((R - abs(x_rot)) / abs(y_rot))) + 270
+                if (Visuals): print("Case 12")
 
         if(E1 < 0 and E2 < 0):
             Angle_Delta = TurningDirection*(abs(Angle_Delta) - 360)
+        if(y_rot == 0): #Either Angle_Delta = either 180 or -180
+            Angle_Delta = 180*TurningDirection
+        if(y_rot == 0):
+            Angle_Delta = -Angle_Delta
+
         if(Visuals):
             print("Angle Delta: " + str(Angle_Delta))
 
