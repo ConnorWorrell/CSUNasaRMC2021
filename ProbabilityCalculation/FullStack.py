@@ -1,8 +1,7 @@
 import math
 import numpy as np
 from PIL import Image
-from ProbabilityCalculation import ProbabilityCalculator as ProbabilityCalculator
-import plotly.graph_objects as go
+from ProbabilityCalculation.ProbabilityCalculation import ProbabilityCalculator as ProbabilityCalculator
 
 Competiton_Zone_Width = 6
 Competiton_Zone_Height = 6
@@ -115,15 +114,15 @@ def Calculate(E1,E2,Prob_Zone_Old, Visuals = True):
 # y = []
 # z = []
 # values = []
-#
-# # print(ProbabilityZone_New[int(.9/Split),int(2/Split),11])
-#
-# Fig = False
+# #
+# # # print(ProbabilityZone_New[int(.9/Split),int(2/Split),11])
+# #
+# Fig = True
 # if(Fig == True):
 #     for x_old in range(Competiton_Zone_Width_Zones):
 #         for y_old in range(Competiton_Zone_Height_Zones):
 #             for Angle_old in range(Angle_Zones-1):
-#                 Prob = Prob_Step_1[y_old,x_old,Angle_old]
+#                 Prob = ProbabilityZone_New[y_old,x_old,Angle_old]
 #                 x.append(x_old*Split)
 #                 y.append(y_old*Split)
 #                 z.append(Angle_old*AngleSplit)

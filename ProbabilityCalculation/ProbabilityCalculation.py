@@ -9,8 +9,8 @@ def ProbabilityCalculator(X_Start,Y_Start,Angle_Start,X_Box,Y_Box,Angle_Box,E1,E
     if(Angle_Box > 180):
         Angle_Box = Angle_Box-360
 
-    Sigma_E1 = .2 #Meters
-    Sigma_E2 = .2 #Meters
+    Sigma_E1 = .05 #Meters
+    Sigma_E2 = .05 #Meters
     Sigma_Rot = 2 #Degrees
 
     Angle_Start_rad = math.radians(Angle_Start)

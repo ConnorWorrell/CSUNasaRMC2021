@@ -1,4 +1,4 @@
-from FullStack import Calculate
+from ProbabilityCalculation.FullStack import Calculate
 import time
 import numpy as np
 import random
