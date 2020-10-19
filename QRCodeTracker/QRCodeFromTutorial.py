@@ -3,13 +3,13 @@
 
 from cv2 import *
 import numpy as np
-from pyzbar.pyzbar import decode
+from pyzbar.pyzbar import decode,ZBarSymbol
 
 fromCamera = True
 
 def Analysis(img):
-
-    for barcode in decode(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    for barcode in decode(gray):#,symbols=[ZBarSymbol.QRCODE]):
         print(barcode)
         myData = barcode.data.decode('utf-8')
         pts=np.array([barcode.polygon],np.int32)
@@ -21,29 +21,37 @@ def Analysis(img):
 if(fromCamera):
     cam = VideoCapture(0)
 
-    feature_params = dict(maxCorners=100,
-                          qualityLevel=0.3,
-                          minDistance=7,
-                          blockSize=7)
-
-    # Parameters for lucas kanade optical flow
-    lk_params = dict(winSize=(15, 15),
-                     maxLevel=2,
-                     criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-
-    # Create some random colors
-    color = np.random.randint(0, 255, (100, 3))
-
-    # Take first frame and find corners in it
-    ret, old_frame = cam.read()
-    old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
-    p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **feature_params)
-
-    # Create a mask image for drawing purposes
-    mask = np.zeros_like(old_frame)
+    # cam = VideoCapture(0,cv2.CAP_DSHOW)
+    # cam.set(cv2.CAP_PROP_FPS, 30.0)
+    # cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m', 'j', 'p', 'g'))
+    # cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
+    # cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    # cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    # feature_params = dict(maxCorners=100,
+    #                       qualityLevel=0.3,
+    #                       minDistance=7,
+    #                       blockSize=7)
+    #
+    # # Parameters for lucas kanade optical flow
+    # lk_params = dict(winSize=(15, 15),
+    #                  maxLevel=2,
+    #                  criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
+    #
+    # # Create some random colors
+    # color = np.random.randint(0, 255, (100, 3))
+    #
+    # # Take first frame and find corners in it
+    # ret, old_frame = cam.read()
+    # old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+    # p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **feature_params)
+    #
+    # # Create a mask image for drawing purposes
+    # mask = np.zeros_like(old_frame)
 
     while True:
         s, img = cam.read()
+        # height, width, channels = img.shape
+        # print(height, width, channels)
         if s:    # frame captured without any errors
             Analysis(img)
             # frame_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
