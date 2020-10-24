@@ -71,7 +71,8 @@ def FindCorners(img):
         BottomRowExists = "D" in DataScanned or "E" in DataScanned or "F" in DataScanned or "G" in DataScanned or "H" in DataScanned
 
         CurrentCodeinTopRow = (TopRowExists and Data in "ABC") or (not TopRowExists and Data in "DEFGH")
-        CurrentCodeinBottomRow = ((BottomRowExists and Data in "DEFGH") or (not BottomRowExists and Data in "ABC")) and ( len(set(Data)&set("DEFGH")) >= 2 or topPts[0][1]-topPts[0][0] > 40)
+        CurrentCodeinBottomRow = ((BottomRowExists and Data in "DEFGH") or (not BottomRowExists and Data in "ABC"))
+        # IsBottomRowAccurate = ( len(set(Data)&set("DEFGH")) >= 2 or topPts[0][1]-topPts[0][0] > 40)
 
         for pt in pts:
             if(math.dist([0,0],pt[0]) < math.dist([0,0],QrCodeImportantPoints[0][0]) and CurrentCodeinTopRow and pt in topPts): # TopLeft
@@ -114,8 +115,9 @@ def FindCorners(img):
         BC_prime = QrCodeImportantPointsLocationRealHorizontal[0]
         AC_prime = QrCodeImportantPointsLocationRealHorizontal[1]
 
+        #issue caused when a point is not selected
         if(BV*BC_prime-AV*AC_prime == 0): #Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-            return
+            raise Exception('BV*BC_prime-AV*AC_prime == 0')
         BC=-(AB*BV*BC_prime)/(BV*BC_prime-AV*AC_prime)
 
         #Calculate the absolute edge location in pixels
@@ -136,8 +138,7 @@ def FindCorners(img):
         AC_prime = QrCodeImportantPointsLocationRealHorizontal[2]
 
         if (BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-            print("skippp")
-            return(None,img)
+            raise Exception('BV*BC_prime-AV*AC_prime == 0')
         BC = -(AB * BV * BC_prime) / (BV * BC_prime - AV * AC_prime)
 
         # Calculate the absolute edge location in pixels
