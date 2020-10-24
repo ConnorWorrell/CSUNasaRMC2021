@@ -50,6 +50,7 @@ def FindCorners(img):
         topPts=topPts.sum(axis=1)
         btmPts=btmPts.sum(axis=1)
 
+        # Calculate the vanishing point by drawing a line from the top and bottom points and find where they intersect
         xdiff = (topPts[0][0] - topPts[1][0], btmPts[0][0] - btmPts[1][0])
         ydiff = (topPts[0][1] - topPts[1][1], btmPts[0][1] - btmPts[1][1])
 
@@ -66,8 +67,9 @@ def FindCorners(img):
         y = det(d, ydiff) / div
         VanishingPoint = (int(x),int(y))
 
+        #Calculate the distance in pixels that the edge of the qrcode array is from each qr code using a modified cross-ratio equation
         topPts = np.array(sorted(topPts,key=lambda x: x[0]))
-        B = topPts[0]#point furthest to the right
+        B = topPts[0] #point furthest to the right
         A = topPts[1]
 
         AB = math.dist(A,B)
@@ -78,9 +80,10 @@ def FindCorners(img):
 
         BC=-(AB*BV*BC_prime)/(BV*BC_prime-AV*AC_prime)
 
+        #Calculate the absolute edge location in pixels
         LeftEdgeLocation = [int(BC*np.dot((B-A),(1,0))/(AB)+B[0]),int(B[1])]#int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
-        EdgeLocation.append(LeftEdgeLocation)
-        print(B-A)
+        # EdgeLocation.append(LeftEdgeLocation)
+        # print(B-A)
 
 
         #Render the Object
@@ -90,9 +93,10 @@ def FindCorners(img):
         cv2.polylines(img, [rightPts], True, (0, 0, 255), 5) # Red
         TextPosition = np.average(pts,axis=0)[0]-(40,-40)
         cv2.putText(img, Data, tuple(TextPosition.astype(int)), font_face, 2, (255,0,255), 3, cv2.LINE_AA)
-    if(EdgeLocation != []):
-        EdgeLocation = tuple(np.array(EdgeLocation).mean(axis=0).astype(int))
-        cv2.circle(img,EdgeLocation,3,(100,100,100),5)
+        cv2.circle(img, tuple(LeftEdgeLocation), 3, (100, 100, 100), 5)
+    # if(EdgeLocation != []):
+    #     EdgeLocation = tuple(np.array(EdgeLocation).mean(axis=0).astype(int))
+    #     cv2.circle(img,EdgeLocation,3,(100,100,100),5)
     cv2.imshow("Result", img)
     cv2.waitKey(1)
 
