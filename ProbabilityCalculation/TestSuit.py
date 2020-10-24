@@ -1,6 +1,8 @@
 import math
 import numpy as np
-from ProbabilityCalculation.FullStack import Calculate
+# from ProbabilityCalculation import Calculate
+# import ProbabilityCalculation
+import FullStack
 
 LeftEncoder = 0.3614229191491658
 RightEncoder = -3.1778141147697676
@@ -42,7 +44,7 @@ Issues = [[-1, -1, 0.0, 3.978873577297384]]
 StartingMap = np.zeros((int(Competiton_Zone_Height_Zones),int(Competiton_Zone_Width_Zones),Angle_Zones))
 StartingMap[int(Competiton_Zone_Height_Zones/2),int(Competiton_Zone_Width_Zones/2),int(Issues[Count][2])]=1
 
-[ProbabilityZone_New, max_prob] = Calculate(2.5,3,StartingMap, Visuals = 1)
+[ProbabilityZone_New, max_prob] = FullStack.Calculate(3,3,StartingMap, Visuals = 1)
 # Calculate(Issues[0][0],Issues[0][1],StartingMap, Visuals = 2)
 # Y:-3.0500000000000003 X:3.0 A:314 P:2.522088074496643e-122
 # x = []

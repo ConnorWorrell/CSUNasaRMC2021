@@ -1,7 +1,8 @@
 import math
 import numpy as np
 from PIL import Image
-from ProbabilityCalculation.ProbabilityCalculation import ProbabilityCalculator as ProbabilityCalculator
+# from ProbabilityCalculation.ProbabilityCalculation import ProbabilityCalculator as ProbabilityCalculator
+import ProbabilityCalculation
 
 Competiton_Zone_Width = 6
 Competiton_Zone_Height = 6
@@ -78,7 +79,7 @@ def Calculate(E1,E2,Prob_Zone_Old, Visuals = True):
                         #for Angle_eval in range(Angle_Zones - 1):
                         if(Visuals > 1):
                             print([x_old*Split,-y_old*Split,Angle_old*AngleSplit,x_eval*Split,-y_eval*Split,0*AngleSplit,E1,E2,Width])
-                        [Prob, Angle] = ProbabilityCalculator(x_old*Split,-y_old*Split,Angle_old*AngleSplit,x_eval*Split,-y_eval*Split,0*AngleSplit,E1,E2,Width)
+                        [Prob, Angle] = ProbabilityCalculation.ProbabilityCalculator(x_old*Split,-y_old*Split,Angle_old*AngleSplit,x_eval*Split,-y_eval*Split,0*AngleSplit,E1,E2,Width)
                         max_prob = max(max_prob,Prob)
                         ProbabilityZone_New[y_eval,x_eval,math.floor(Angle/AngleSplit)] = ProbabilityZone_New[y_eval,x_eval,math.floor(Angle/AngleSplit)] + Prob*Prob_Zone_Old[y_old,x_old,Angle_old]
 
