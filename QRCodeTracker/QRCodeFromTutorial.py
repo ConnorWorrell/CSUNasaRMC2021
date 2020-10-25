@@ -263,13 +263,17 @@ RefrenceHeightLeft = 200
 
 def GetDistance(Corners):
     a = .5 #Board Width in meters
-    HeightMeasuredRightC = abs(Corners[2][1] - Corners[1][1])
-    HeightMeasuredLeftB = abs(Corners[0][1] - Corners[3][1])
+    HeightMeasuredRightC = math.dist(Corners[2],Corners[1])
+    HeightMeasuredLeftB = math.dist(Corners[0],Corners[3])
 
     c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC
     b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB
 
-    ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b))
+    try:
+        ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b))
+    except:
+        print("ThetaB1 Calculation Failure: " + str((c**2-a**2-b**2)/(-2*a*b)))
+        return None,None
 
     y_rel = math.sin(ThetaB1)*b
     x_rel = math.cos(ThetaB1)*b
