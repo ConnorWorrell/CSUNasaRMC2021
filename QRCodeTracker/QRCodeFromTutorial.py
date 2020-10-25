@@ -246,6 +246,6 @@ if(fromCamera):
             cv2.waitKey(1)
 else:
 
-    img = cv2.imread("filename.png")
+    img = cv2.imread("QRCodeBoard.png")
     Analysis(img)
     cv2.waitKey(0)
