@@ -78,14 +78,14 @@ def FindCorners(img):
         CurrentCodeinBottomRow = ((BottomRowExists and (IsBottomRowAccurateEnough or TopRowExists == False) and Data in "DEFGH") or (not BottomRowExists and Data in "ABC"))
 
 
-        print(DataScanned)
-        print("Data: " + str(Data))
-        print("Accurate: " + str(IsBottomRowAccurateEnough))
-        print(BottomRowExists)
+        # print(DataScanned)
+        # print("Data: " + str(Data))
+        # print("Accurate: " + str(IsBottomRowAccurateEnough))
+        # print(BottomRowExists)
         for pt in pts:
-            print("Current Code: " + str(CurrentCodeinBottomRow))
-            if(CurrentCodeinBottomRow and pt in btmPts):
-                print(math.dist([700, 400], pt[0]),math.dist([700, 400], QrCodeImportantPoints[2][0]))
+            # print("Current Code: " + str(CurrentCodeinBottomRow))
+            # if(CurrentCodeinBottomRow and pt in btmPts):
+                # print(math.dist([700, 400], pt[0]),math.dist([700, 400], QrCodeImportantPoints[2][0]))
             # print(np.sum(QrCodeImportantPoints,axis=1))
 
             if(math.dist([0,0],pt[0]) < math.dist([0,0],QrCodeImportantPoints[0][0]) and CurrentCodeinTopRow and pt in topPts): # TopLeft
@@ -109,7 +109,7 @@ def FindCorners(img):
     if(DataScanned != []):
         # This ignores if duplicate points are in ImportantPoints
         Checker = []
-        print(QrCodeImportantPoints)
+        # print(QrCodeImportantPoints)
         for Point in QrCodeImportantPoints:
             # print("Checker: " + str(Checker))
             # print(Point[0])
@@ -256,6 +256,29 @@ def FindCorners(img):
 
     return(None,img)
 
+RefDistanceRight = 0.5 #Calibration distance in m
+RefDistanceLeft = 0.5
+RefrenceHeightRight = 200 #Calibration height in pix
+RefrenceHeightLeft = 200
+
+def GetDistance(Corners):
+    a = .5 #Board Width in meters
+    HeightMeasuredRightC = abs(Corners[2][1] - Corners[1][1])
+    HeightMeasuredLeftB = abs(Corners[0][1] - Corners[3][1])
+
+    c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC
+    b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB
+
+    ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b))
+
+    y_rel = math.sin(ThetaB1)*b
+    x_rel = math.cos(ThetaB1)*b
+
+    x_abs=-.5/2+x_rel
+    y_abs=y_rel
+
+    return x_abs,y_abs
+
 if(fromCamera):
     cam = VideoCapture(0)
 
@@ -263,6 +286,9 @@ if(fromCamera):
         s, img = cam.read()
         if s:    # frame captured without any errors
             Corners,img = FindCorners(img)
+            if Corners != None:
+                x,y = GetDistance(Corners)
+                print(x,y)
             cv2.imshow("Result", img)
             cv2.waitKey(1)
 else:
