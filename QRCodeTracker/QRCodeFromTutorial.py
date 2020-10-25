@@ -215,6 +215,12 @@ RefDistanceLeft = 0.5
 RefrenceHeightRight = 200 #Calibration height in pix
 RefrenceHeightLeft = 200
 
+#Calibration for the position
+x_CalibrationDelta = 0
+x_CalibrationConstant = 0
+y_CalibrationDelta = 2.5
+y_CalibationConstant = -.3
+
 def GetDistance(Corners):
     a = BoardWidth #Board Width in meters
     HeightMeasuredRightC = math.dist(Corners[2],Corners[1]) #Vertical height of edge of board in pix
@@ -232,8 +238,8 @@ def GetDistance(Corners):
     y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
 
-    x_abs=-a/2+x_rel #Distance from center of board to camera location
-    y_abs=y_rel
+    x_abs=-a/2+x_rel*x_CalibrationDelta + x_CalibrationConstant #Distance from center of board to camera location
+    y_abs=y_rel*y_CalibrationDelta+y_CalibationConstant
 
     return x_abs,y_abs
 
