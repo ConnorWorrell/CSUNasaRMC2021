@@ -36,6 +36,7 @@ TopLeftCriteria = "ABCDEFGH"
 #Camera resolution
 X_Res = 700
 Y_Res = 400
+BoardWidth = 1 #Board Width in meters
 
 def FindCorners(img):
     font_face = cv2.FONT_HERSHEY_SIMPLEX
@@ -215,7 +216,7 @@ RefrenceHeightRight = 200 #Calibration height in pix
 RefrenceHeightLeft = 200
 
 def GetDistance(Corners):
-    a = .5 #Board Width in meters
+    a = BoardWidth #Board Width in meters
     HeightMeasuredRightC = math.dist(Corners[2],Corners[1]) #Vertical height of edge of board in pix
     HeightMeasuredLeftB = math.dist(Corners[0],Corners[3]) 
 
@@ -231,7 +232,7 @@ def GetDistance(Corners):
     y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
 
-    x_abs=-.5/2+x_rel #Distance from center of board to camera location
+    x_abs=-a/2+x_rel #Distance from center of board to camera location
     y_abs=y_rel
 
     return x_abs,y_abs
