@@ -42,9 +42,9 @@ def FindCorners(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ArrayDecode = decode(gray)
     DataScanned = []
-    for code in ArrayDecode:
+    
+    for code in ArrayDecode: # Determine what barcode lables were scanned
         Data = code.data.decode('utf-8')
-        # print(Data)
         DataScanned.append(Data) #Grab which barcodes were scanned
 
     for code in ArrayDecode:
@@ -54,11 +54,14 @@ def FindCorners(img):
         pts = np.array([code.polygon], np.int32)
         pts = pts.reshape((-1, 1, 2))
 
+        #Split rectangles into line segments and categorize into top,bottom,left,and right
+        #This fails if the board is rotated more than 45 degrees
         btmPts = np.array(sorted(pts.tolist(),key=lambda x: x[0][1]))[2:4]
         topPts = np.array(sorted(pts.tolist(), key=lambda x: x[0][1]))[0:2]
         rightPts = np.array(sorted(pts.tolist(),key=lambda x: x[0][0]))[2:4]
         leftPts = np.array(sorted(pts.tolist(),key=lambda x: x[0][0]))[0:2]
 
+        #Draw boxes on the image around scanned barcodes, place text with data information ontop of them
         cv2.polylines(img, [topPts], True, (0, 50, 50), 5)  # Color is bgr yellow
         cv2.polylines(img, [btmPts], True, (50, 0, 50), 5)  # Neon Purple
         cv2.polylines(img, [leftPts], True, (50, 50, 0), 5)  # Cyan
@@ -66,28 +69,23 @@ def FindCorners(img):
         TextPosition = np.average(pts, axis=0)[0] - (40, -40)
         cv2.putText(img, Data, tuple(TextPosition.astype(int)), font_face, 2, (50, 0, 50), 3, cv2.LINE_AA)
 
+        #Collapse wierd cv2 point information into something more usable
         topPts=topPts.sum(axis=1)
         btmPts=btmPts.sum(axis=1)
 
-        IsBottomRowAccurateEnough = (len(set(DataScanned) & set("DEFGH")) >= 3 or (Data in "DEFGH" and math.dist(topPts[1], topPts[0]) > 100))
-
+        # Is the resolution accurate enough to determine the board position using only the bottom barcodes
+        IsBottomRowAccurateEnough = (len(set(DataScanned) & set("DEFGH")) >= 3 or (Data in "DEFGH" and math.dist(topPts[1], topPts[0]) > 100)) #100 is the minimum height of the barcode in pix
+        # Did one of the larger top barcodes get scanned
         TopRowExists = "A" in DataScanned or "B" in DataScanned or "C" in DataScanned
-        BottomRowExists = ("D" in DataScanned or "E" in DataScanned or "F" in DataScanned or "G" in DataScanned or "H" in DataScanned) and (IsBottomRowAccurateEnough or TopRowExists == False)
-
+        # Does the bottom row exist, and is it accurate enough, or is it the only barcode scanned, if this is the case we will calculate using part or all of the bottom row
+        BottomRowUsedInCalculation = ("D" in DataScanned or "E" in DataScanned or "F" in DataScanned or "G" in DataScanned or "H" in DataScanned) and (IsBottomRowAccurateEnough or TopRowExists == False)
+        # Is the barcode that is being currently evaluated part of the top row
         CurrentCodeinTopRow = (TopRowExists and Data in "ABC") or (not TopRowExists and Data in "DEFGH")
-        CurrentCodeinBottomRow = ((BottomRowExists and (IsBottomRowAccurateEnough or TopRowExists == False) and Data in "DEFGH") or (not BottomRowExists and Data in "ABC"))
+        # Is the bottom row being used for calculation, and we are currently calculating the bottom row, or the bottom row is not and we need to calculate the bottom portion using the top row
+        CurrentCodeinBottomRow = ((BottomRowUsedInCalculation and Data in "DEFGH") or (not BottomRowUsedInCalculation and Data in "ABC"))
 
-
-        # print(DataScanned)
-        # print("Data: " + str(Data))
-        # print("Accurate: " + str(IsBottomRowAccurateEnough))
-        # print(BottomRowExists)
+        #Evaluate which points are closer to the edge of the board
         for pt in pts:
-            # print("Current Code: " + str(CurrentCodeinBottomRow))
-            # if(CurrentCodeinBottomRow and pt in btmPts):
-                # print(math.dist([700, 400], pt[0]),math.dist([700, 400], QrCodeImportantPoints[2][0]))
-            # print(np.sum(QrCodeImportantPoints,axis=1))
-
             if(math.dist([0,0],pt[0]) < math.dist([0,0],QrCodeImportantPoints[0][0]) and CurrentCodeinTopRow and pt in topPts): # TopLeft
                 QrCodeImportantPoints[0]=pt
                 QrCodeImportantPointsLocationRealHorizontal[0] = QRCodeLocation[Data][0]
@@ -109,10 +107,7 @@ def FindCorners(img):
     if(DataScanned != []):
         # This ignores if duplicate points are in ImportantPoints
         Checker = []
-        # print(QrCodeImportantPoints)
         for Point in QrCodeImportantPoints:
-            # print("Checker: " + str(Checker))
-            # print(Point[0])
             if(Point[0].tolist() in Checker):
                 # print("Duplicate Point")
                 return None, img
@@ -134,10 +129,6 @@ def FindCorners(img):
         x = det(d, xdiff) / div
         y = det(d, ydiff) / div
         VanishingPoint = [int(x), int(y)]
-
-        # if(VanishingPoint[0] > -300 and VanishingPoint[0] < 0):
-        #     # print("Captured")
-        #     return None, img
 
         #Calculate the pixel location of a point along the top left edge of the qrcode array using crosspoint
         A = QrCodeImportantPoints[1][0] #point furthest to the right
@@ -182,51 +173,11 @@ def FindCorners(img):
         BC = -(AB * AV * (QRSize[0]-AC_prime)) / (AV * (QRSize[0]-AC_prime) - BV * (QRSize[0]-BC_prime))
         RightBtmEdgeLocaiton =  [int(BC*np.dot((A-B),(1,0))/(AB)+A[0]),int(BC*np.dot((A-B),(0,1))/(AB)+A[1])]
 
-        # QRArray = np.array([LeftTopEdgeLocation,RightTopEdgeLocaiton,RightBtmEdgeLocaiton,LeftBtmEdgeLocation])
-        # cv2.polylines(img, [QRArray], True, (0, 0, 255), 5)  # Red
-
-        #Calculate the vanishing point for the edge lines
-        # xdiff = (LeftTopEdgeLocation[0] - LeftBtmEdgeLocation[0],
-        #          RightTopEdgeLocaiton[0] - RightBtmEdgeLocaiton[0])
-        # ydiff = (LeftTopEdgeLocation[1] - LeftBtmEdgeLocation[1],
-        #          RightTopEdgeLocaiton[1] - RightBtmEdgeLocaiton[1])
-        #
-        # d = (det(*[LeftTopEdgeLocation, LeftBtmEdgeLocation]),
-        #      det(*[RightTopEdgeLocaiton, RightBtmEdgeLocaiton]))
-        # x = det(d, xdiff) / div
-        # y = det(d, ydiff) / div
-        # VanishingPoint = [int(x), int(y)]
-        # # print(VanishingPoint)
-        #
-        # # VanishingPoint = 10000
-        #
-        # # Calculate the pixel location of a point along the top left edge of the qrcode array using crosspoint
-        # A = np.array(RightBtmEdgeLocaiton)  # bottom point left side
-        # B = np.array(LeftTopEdgeLocation)  # top point left side
-        #
-        # AB = math.dist(A, B)
-        # BV = math.dist(B, VanishingPoint)
-        # AV = math.dist(A, VanishingPoint)
-        # BC_prime = QrCodeImportantPointsLocationRealVertical[0]
-        # AC_prime = QrCodeImportantPointsLocationRealVertical[3]
-        #
-        # # issue caused when a point is not selected
-        # if (
-        #         BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-        #     raise Exception('BV*BC_prime-AV*AC_prime == 0')
-        # BC = -(AB * BV * BC_prime) / (BV * BC_prime - AV * AC_prime)
-        #
-        # # Calculate the absolute edge location in pixels
-        # # print([LeftTopEdgeLocation, RightTopEdgeLocaiton, RightBtmEdgeLocaiton, LeftBtmEdgeLocation])
-        # LeftTopEdgeLocationTrue = [int(BC * np.dot((B - A), (1, 0)) / (AB) + B[0]), int(
-        #     BC * np.dot((B - A), (0, 1)) / (AB) + B[1])]  # int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
-        # print(LeftTopEdgeLocationTrue,VanishingPoint)
-        # cv2.circle(img, tuple(LeftTopEdgeLocationTrue),5,(255,0,255),5)
-
         #Calculate pixel/cm for each side
         LeftSideConversionY = (LeftBtmEdgeLocation[1]-LeftTopEdgeLocation[1])/(QrCodeImportantPointsLocationRealVertical[3]-QrCodeImportantPointsLocationRealVertical[0])
         RightSideConversionY = (RightBtmEdgeLocaiton[1]-RightTopEdgeLocaiton[1])/(QrCodeImportantPointsLocationRealVertical[2]-QrCodeImportantPointsLocationRealVertical[1])
-        #Adjust the sides by the correct ammount
+
+        #Adjust the sides by the correct ammount in the senario that not a single barcode from one of the rows is scanned
         Dy = -LeftSideConversionY*QrCodeImportantPointsLocationRealVertical[0]
         Dx = ((LeftBtmEdgeLocation[0]-LeftTopEdgeLocation[0])*Dy)/(LeftBtmEdgeLocation[1]-LeftTopEdgeLocation[1])
         LeftTopAdjusted = [int(Dx+LeftTopEdgeLocation[0]),
@@ -247,8 +198,6 @@ def FindCorners(img):
                 RightBtmEdgeLocaiton[1] - RightTopEdgeLocaiton[1])
         RightBtmAdjusted = [int(Dx + RightBtmEdgeLocaiton[0]), int(Dy + RightBtmEdgeLocaiton[1])]
 
-        # cv2.circle(img,tuple(LeftTopAdjusted),5,(255,255,0),5)
-
         QRArray = np.array([LeftTopAdjusted, RightTopAdjusted, RightBtmAdjusted, LeftBtmAdjusted])
         cv2.polylines(img, [QRArray], True, (0, 0, 255), 5)
 
@@ -263,22 +212,22 @@ RefrenceHeightLeft = 200
 
 def GetDistance(Corners):
     a = .5 #Board Width in meters
-    HeightMeasuredRightC = math.dist(Corners[2],Corners[1])
-    HeightMeasuredLeftB = math.dist(Corners[0],Corners[3])
+    HeightMeasuredRightC = math.dist(Corners[2],Corners[1]) #Vertical height of edge of board in pix
+    HeightMeasuredLeftB = math.dist(Corners[0],Corners[3]) 
 
-    c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC
-    b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB
+    c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC #Distance from right side of board to camera
+    b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB #Distance from left side of board to camera
 
     try:
-        ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b))
+        ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b)) # Angle between board face and direction to camera, see notes for more info
     except:
         print("ThetaB1 Calculation Failure: " + str((c**2-a**2-b**2)/(-2*a*b)))
         return None,None
 
-    y_rel = math.sin(ThetaB1)*b
+    y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
 
-    x_abs=-.5/2+x_rel
+    x_abs=-.5/2+x_rel #Distance from center of board to camera location
     y_abs=y_rel
 
     return x_abs,y_abs
@@ -300,5 +249,3 @@ else:
     img = cv2.imread("filename.png")
     Analysis(img)
     cv2.waitKey(0)
-
-# cv2.imread()
