@@ -33,6 +33,10 @@ QRCodeLocation = { #Matrix with the qr code data and the left/right/top/bottom s
 }
 TopLeftCriteria = "ABCDEFGH"
 
+#Camera resolution
+X_Res = 700
+Y_Res = 400
+
 def FindCorners(img):
     font_face = cv2.FONT_HERSHEY_SIMPLEX
     VanishingPoint = []
@@ -90,15 +94,15 @@ def FindCorners(img):
                 QrCodeImportantPoints[0]=pt
                 QrCodeImportantPointsLocationRealHorizontal[0] = QRCodeLocation[Data][0]
                 QrCodeImportantPointsLocationRealVertical[0] = QRCodeLocation[Data][2]
-            if(math.dist([700,0],pt[0]) < math.dist([700,0],QrCodeImportantPoints[1][0]) and CurrentCodeinTopRow and pt in topPts): # TopRight
+            if(math.dist([X_Res,0],pt[0]) < math.dist([X_Res,0],QrCodeImportantPoints[1][0]) and CurrentCodeinTopRow and pt in topPts): # TopRight
                 QrCodeImportantPoints[1] = pt
                 QrCodeImportantPointsLocationRealHorizontal[1] = QRCodeLocation[Data][1]
                 QrCodeImportantPointsLocationRealVertical[1] = QRCodeLocation[Data][2]
-            if (math.dist([700, 400], pt[0]) < math.dist([700, 400], QrCodeImportantPoints[2][0]) and CurrentCodeinBottomRow and pt in btmPts):  # BottomRight
+            if (math.dist([X_Res, Y_Res], pt[0]) < math.dist([X_Res, Y_Res], QrCodeImportantPoints[2][0]) and CurrentCodeinBottomRow and pt in btmPts):  # BottomRight
                 QrCodeImportantPoints[2] = pt
                 QrCodeImportantPointsLocationRealHorizontal[2] = QRCodeLocation[Data][1]
                 QrCodeImportantPointsLocationRealVertical[2] = QRCodeLocation[Data][3]
-            if (math.dist([0, 400], pt[0]) < math.dist([0, 400], QrCodeImportantPoints[3][0]) and CurrentCodeinBottomRow and pt in btmPts):  # BottomLeft
+            if (math.dist([0, Y_Res], pt[0]) < math.dist([0, Y_Res], QrCodeImportantPoints[3][0]) and CurrentCodeinBottomRow and pt in btmPts):  # BottomLeft
                 QrCodeImportantPoints[3] = pt
                 QrCodeImportantPointsLocationRealHorizontal[3] = QRCodeLocation[Data][0]
                 QrCodeImportantPointsLocationRealVertical[3] = QRCodeLocation[Data][3]
