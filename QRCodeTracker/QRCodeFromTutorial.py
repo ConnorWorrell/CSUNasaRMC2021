@@ -38,6 +38,7 @@ def FindCorners(img):
     VanishingPoint = []
     QrCodeImportantPoints = [[[10000,10000]],[[-10000,10000]],[[-10000,-10000]],[[10000,-10000]]] #[[TopLeft],[TopRight],[BottomRight],[BottomLeft]] points
     QrCodeImportantPointsLocationRealHorizontal = [0,0,0,0]
+    QrCodeImportantPointsLocationRealVertical = [0,0,0,0]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ArrayDecode = decode(gray)
     DataScanned = []
@@ -45,9 +46,11 @@ def FindCorners(img):
         Data = code.data.decode('utf-8')
         # print(Data)
         DataScanned.append(Data) #Grab which barcodes were scanned
+
     for code in ArrayDecode:
         # Calculate where corners should be using each qrcode
         Data = code.data.decode('utf-8')
+
         pts = np.array([code.polygon], np.int32)
         pts = pts.reshape((-1, 1, 2))
 
@@ -56,7 +59,6 @@ def FindCorners(img):
         rightPts = np.array(sorted(pts.tolist(),key=lambda x: x[0][0]))[2:4]
         leftPts = np.array(sorted(pts.tolist(),key=lambda x: x[0][0]))[0:2]
 
-        # print([topPts])
         cv2.polylines(img, [topPts], True, (0, 50, 50), 5)  # Color is bgr yellow
         cv2.polylines(img, [btmPts], True, (50, 0, 50), 5)  # Neon Purple
         cv2.polylines(img, [leftPts], True, (50, 50, 0), 5)  # Cyan
@@ -67,27 +69,55 @@ def FindCorners(img):
         topPts=topPts.sum(axis=1)
         btmPts=btmPts.sum(axis=1)
 
+        IsBottomRowAccurateEnough = (len(set(DataScanned) & set("DEFGH")) >= 3 or (Data in "DEFGH" and math.dist(topPts[1], topPts[0]) > 100))
+
         TopRowExists = "A" in DataScanned or "B" in DataScanned or "C" in DataScanned
-        BottomRowExists = "D" in DataScanned or "E" in DataScanned or "F" in DataScanned or "G" in DataScanned or "H" in DataScanned
+        BottomRowExists = ("D" in DataScanned or "E" in DataScanned or "F" in DataScanned or "G" in DataScanned or "H" in DataScanned) and (IsBottomRowAccurateEnough or TopRowExists == False)
 
         CurrentCodeinTopRow = (TopRowExists and Data in "ABC") or (not TopRowExists and Data in "DEFGH")
-        CurrentCodeinBottomRow = ((BottomRowExists and Data in "DEFGH") or (not BottomRowExists and Data in "ABC"))
-        # IsBottomRowAccurate = ( len(set(Data)&set("DEFGH")) >= 2 or topPts[0][1]-topPts[0][0] > 40)
+        CurrentCodeinBottomRow = ((BottomRowExists and (IsBottomRowAccurateEnough or TopRowExists == False) and Data in "DEFGH") or (not BottomRowExists and Data in "ABC"))
 
+
+        print(DataScanned)
+        print("Data: " + str(Data))
+        print("Accurate: " + str(IsBottomRowAccurateEnough))
+        print(BottomRowExists)
         for pt in pts:
+            print("Current Code: " + str(CurrentCodeinBottomRow))
+            if(CurrentCodeinBottomRow and pt in btmPts):
+                print(math.dist([700, 400], pt[0]),math.dist([700, 400], QrCodeImportantPoints[2][0]))
+            # print(np.sum(QrCodeImportantPoints,axis=1))
+
             if(math.dist([0,0],pt[0]) < math.dist([0,0],QrCodeImportantPoints[0][0]) and CurrentCodeinTopRow and pt in topPts): # TopLeft
                 QrCodeImportantPoints[0]=pt
                 QrCodeImportantPointsLocationRealHorizontal[0] = QRCodeLocation[Data][0]
+                QrCodeImportantPointsLocationRealVertical[0] = QRCodeLocation[Data][2]
             if(math.dist([700,0],pt[0]) < math.dist([700,0],QrCodeImportantPoints[1][0]) and CurrentCodeinTopRow and pt in topPts): # TopRight
                 QrCodeImportantPoints[1] = pt
                 QrCodeImportantPointsLocationRealHorizontal[1] = QRCodeLocation[Data][1]
+                QrCodeImportantPointsLocationRealVertical[1] = QRCodeLocation[Data][2]
             if (math.dist([700, 400], pt[0]) < math.dist([700, 400], QrCodeImportantPoints[2][0]) and CurrentCodeinBottomRow and pt in btmPts):  # BottomRight
                 QrCodeImportantPoints[2] = pt
                 QrCodeImportantPointsLocationRealHorizontal[2] = QRCodeLocation[Data][1]
+                QrCodeImportantPointsLocationRealVertical[2] = QRCodeLocation[Data][3]
             if (math.dist([0, 400], pt[0]) < math.dist([0, 400], QrCodeImportantPoints[3][0]) and CurrentCodeinBottomRow and pt in btmPts):  # BottomLeft
                 QrCodeImportantPoints[3] = pt
                 QrCodeImportantPointsLocationRealHorizontal[3] = QRCodeLocation[Data][0]
+                QrCodeImportantPointsLocationRealVertical[3] = QRCodeLocation[Data][3]
+    if(QrCodeImportantPointsLocationRealVertical[2] != QrCodeImportantPointsLocationRealVertical[3]):
+        print("BAd")
     if(DataScanned != []):
+        # This ignores if duplicate points are in ImportantPoints
+        Checker = []
+        print(QrCodeImportantPoints)
+        for Point in QrCodeImportantPoints:
+            # print("Checker: " + str(Checker))
+            # print(Point[0])
+            if(Point[0].tolist() in Checker):
+                # print("Duplicate Point")
+                return None, img
+            Checker.append(Point[0].tolist())
+
         #Calculate horizontal vanishing point
         xdiff = (QrCodeImportantPoints[0][0][0] - QrCodeImportantPoints[1][0][0], QrCodeImportantPoints[3][0][0] - QrCodeImportantPoints[2][0][0])
         ydiff = (QrCodeImportantPoints[0][0][1] - QrCodeImportantPoints[1][0][1], QrCodeImportantPoints[3][0][1] - QrCodeImportantPoints[2][0][1])
@@ -104,6 +134,10 @@ def FindCorners(img):
         x = det(d, xdiff) / div
         y = det(d, ydiff) / div
         VanishingPoint = [int(x), int(y)]
+
+        # if(VanishingPoint[0] > -300 and VanishingPoint[0] < 0):
+        #     # print("Captured")
+        #     return None, img
 
         #Calculate the pixel location of a point along the top left edge of the qrcode array using crosspoint
         A = QrCodeImportantPoints[1][0] #point furthest to the right
@@ -148,10 +182,77 @@ def FindCorners(img):
         BC = -(AB * AV * (QRSize[0]-AC_prime)) / (AV * (QRSize[0]-AC_prime) - BV * (QRSize[0]-BC_prime))
         RightBtmEdgeLocaiton =  [int(BC*np.dot((A-B),(1,0))/(AB)+A[0]),int(BC*np.dot((A-B),(0,1))/(AB)+A[1])]
 
-        QRArray = np.array([LeftTopEdgeLocation,RightTopEdgeLocaiton,RightBtmEdgeLocaiton,LeftBtmEdgeLocation])
-        cv2.polylines(img, [QRArray], True, (0, 0, 255), 5)  # Red
+        # QRArray = np.array([LeftTopEdgeLocation,RightTopEdgeLocaiton,RightBtmEdgeLocaiton,LeftBtmEdgeLocation])
+        # cv2.polylines(img, [QRArray], True, (0, 0, 255), 5)  # Red
 
-        return([LeftTopEdgeLocation, RightTopEdgeLocaiton, RightBtmEdgeLocaiton, LeftBtmEdgeLocation],img)
+        #Calculate the vanishing point for the edge lines
+        # xdiff = (LeftTopEdgeLocation[0] - LeftBtmEdgeLocation[0],
+        #          RightTopEdgeLocaiton[0] - RightBtmEdgeLocaiton[0])
+        # ydiff = (LeftTopEdgeLocation[1] - LeftBtmEdgeLocation[1],
+        #          RightTopEdgeLocaiton[1] - RightBtmEdgeLocaiton[1])
+        #
+        # d = (det(*[LeftTopEdgeLocation, LeftBtmEdgeLocation]),
+        #      det(*[RightTopEdgeLocaiton, RightBtmEdgeLocaiton]))
+        # x = det(d, xdiff) / div
+        # y = det(d, ydiff) / div
+        # VanishingPoint = [int(x), int(y)]
+        # # print(VanishingPoint)
+        #
+        # # VanishingPoint = 10000
+        #
+        # # Calculate the pixel location of a point along the top left edge of the qrcode array using crosspoint
+        # A = np.array(RightBtmEdgeLocaiton)  # bottom point left side
+        # B = np.array(LeftTopEdgeLocation)  # top point left side
+        #
+        # AB = math.dist(A, B)
+        # BV = math.dist(B, VanishingPoint)
+        # AV = math.dist(A, VanishingPoint)
+        # BC_prime = QrCodeImportantPointsLocationRealVertical[0]
+        # AC_prime = QrCodeImportantPointsLocationRealVertical[3]
+        #
+        # # issue caused when a point is not selected
+        # if (
+        #         BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
+        #     raise Exception('BV*BC_prime-AV*AC_prime == 0')
+        # BC = -(AB * BV * BC_prime) / (BV * BC_prime - AV * AC_prime)
+        #
+        # # Calculate the absolute edge location in pixels
+        # # print([LeftTopEdgeLocation, RightTopEdgeLocaiton, RightBtmEdgeLocaiton, LeftBtmEdgeLocation])
+        # LeftTopEdgeLocationTrue = [int(BC * np.dot((B - A), (1, 0)) / (AB) + B[0]), int(
+        #     BC * np.dot((B - A), (0, 1)) / (AB) + B[1])]  # int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
+        # print(LeftTopEdgeLocationTrue,VanishingPoint)
+        # cv2.circle(img, tuple(LeftTopEdgeLocationTrue),5,(255,0,255),5)
+
+        #Calculate pixel/cm for each side
+        LeftSideConversionY = (LeftBtmEdgeLocation[1]-LeftTopEdgeLocation[1])/(QrCodeImportantPointsLocationRealVertical[3]-QrCodeImportantPointsLocationRealVertical[0])
+        RightSideConversionY = (RightBtmEdgeLocaiton[1]-RightTopEdgeLocaiton[1])/(QrCodeImportantPointsLocationRealVertical[2]-QrCodeImportantPointsLocationRealVertical[1])
+        #Adjust the sides by the correct ammount
+        Dy = -LeftSideConversionY*QrCodeImportantPointsLocationRealVertical[0]
+        Dx = ((LeftBtmEdgeLocation[0]-LeftTopEdgeLocation[0])*Dy)/(LeftBtmEdgeLocation[1]-LeftTopEdgeLocation[1])
+        LeftTopAdjusted = [int(Dx+LeftTopEdgeLocation[0]),
+                           int(Dy+LeftTopEdgeLocation[1])]
+
+        Dy = -LeftSideConversionY * (QrCodeImportantPointsLocationRealVertical[3]-QRSize[1])
+        Dx = ((LeftBtmEdgeLocation[0] - LeftTopEdgeLocation[0]) * Dy) / (
+                    LeftBtmEdgeLocation[1] - LeftTopEdgeLocation[1])
+        LeftBtmAdjusted = [int(Dx + LeftBtmEdgeLocation[0]),int(Dy + LeftBtmEdgeLocation[1])]
+
+        Dy = -RightSideConversionY * (QrCodeImportantPointsLocationRealVertical[1])
+        Dx = ((RightBtmEdgeLocaiton[0] - RightTopEdgeLocaiton[0]) * Dy) / (
+                RightBtmEdgeLocaiton[1] - RightTopEdgeLocaiton[1])
+        RightTopAdjusted = [int(Dx + RightTopEdgeLocaiton[0]), int(Dy + RightTopEdgeLocaiton[1])]
+
+        Dy = -RightSideConversionY * (QrCodeImportantPointsLocationRealVertical[2]-QRSize[1])
+        Dx = ((RightBtmEdgeLocaiton[0] - RightTopEdgeLocaiton[0]) * Dy) / (
+                RightBtmEdgeLocaiton[1] - RightTopEdgeLocaiton[1])
+        RightBtmAdjusted = [int(Dx + RightBtmEdgeLocaiton[0]), int(Dy + RightBtmEdgeLocaiton[1])]
+
+        # cv2.circle(img,tuple(LeftTopAdjusted),5,(255,255,0),5)
+
+        QRArray = np.array([LeftTopAdjusted, RightTopAdjusted, RightBtmAdjusted, LeftBtmAdjusted])
+        cv2.polylines(img, [QRArray], True, (0, 0, 255), 5)
+
+        return([LeftTopAdjusted, RightTopAdjusted, RightBtmAdjusted, LeftBtmAdjusted],img)
 
     return(None,img)
 
