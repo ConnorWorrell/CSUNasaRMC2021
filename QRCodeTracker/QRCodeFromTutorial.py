@@ -236,7 +236,7 @@ def GetDistance(Corners):
     y_abs=y_rel
 
     return x_abs,y_abs
-
+  
 if(fromCamera):
     cam = VideoCapture(0)
 
