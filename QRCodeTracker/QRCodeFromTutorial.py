@@ -218,10 +218,10 @@ RefrenceHeightRight = 200 #Calibration height in pix
 RefrenceHeightLeft = 200
 
 #Calibration for the position
-x_CalibrationDelta = 0
+x_CalibrationDelta = 4
 x_CalibrationConstant = 0
 y_CalibrationDelta = 2.5
-y_CalibationConstant = -.3
+y_CalibationConstant = 0
 
 def GetDistance(Corners):
     a = BoardWidth #Board Width in meters
@@ -240,7 +240,7 @@ def GetDistance(Corners):
     y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
 
-    x_abs=-a/2+x_rel*x_CalibrationDelta + x_CalibrationConstant #Distance from center of board to camera location
+    x_abs=x_rel*x_CalibrationDelta-(a*x_CalibrationDelta)/2#+x_rel*x_CalibrationDelta + x_CalibrationConstant #Distance from center of board to camera location
     y_abs=y_rel*y_CalibrationDelta+y_CalibationConstant
 
     a = -math.degrees(math.atan(x_abs / y_abs))
@@ -274,7 +274,8 @@ if(fromCamera):
             Corners,img = FindCorners(img)
             if Corners != None:
                 x,y,rot = GetDistance(Corners)
-                displayPosition(x,y,rot)
+                if x != None:
+                    displayPosition(x,y,rot)
                 print(x,y)
             cv2.imshow("Result", img)
             cv2.waitKey(1)
