@@ -6,6 +6,7 @@ import numpy as np
 from pyzbar.pyzbar import decode,ZBarSymbol
 # import json
 import math
+import statistics
 
 fromCamera = True
 
@@ -36,6 +37,7 @@ TopLeftCriteria = "ABCDEFGH"
 #Camera resolution
 X_Res = 700
 Y_Res = 400
+CameraViewAngle = 90
 BoardWidth = 1 #Board Width in meters
 
 def FindCorners(img):
@@ -233,7 +235,7 @@ def GetDistance(Corners):
         ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b)) # Angle between board face and direction to camera, see notes for more info
     except:
         print("ThetaB1 Calculation Failure: " + str((c**2-a**2-b**2)/(-2*a*b)))
-        return None,None
+        return None,None,None
 
     y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
@@ -251,7 +253,8 @@ if(fromCamera):
         if s:    # frame captured without any errors
             Corners,img = FindCorners(img)
             if Corners != None:
-                x,y = GetDistance(Corners)
+                x,y,rot = GetDistance(Corners)
+                displayPosition(x,y,rot)
                 print(x,y)
             cv2.imshow("Result", img)
             cv2.waitKey(1)
