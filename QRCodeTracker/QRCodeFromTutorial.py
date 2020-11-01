@@ -243,8 +243,28 @@ def GetDistance(Corners):
     x_abs=-a/2+x_rel*x_CalibrationDelta + x_CalibrationConstant #Distance from center of board to camera location
     y_abs=y_rel*y_CalibrationDelta+y_CalibationConstant
 
-    return x_abs,y_abs
-  
+    a = -math.degrees(math.atan(x_abs / y_abs))
+    b = (-(statistics.mean([Corners[0][0], Corners[1][0],Corners[2][0],Corners[3][0]])) + X_Res / 2) * CameraViewAngle / X_Res
+    # print(a, b)
+    rotation = a + b
+
+    return x_abs,y_abs,rotation
+
+#x is the x position left and right from the center of the field
+#y is the position away from the board
+def displayPosition(x,y,angle):
+    res = 100# 10cm is one pix
+    angleDist = 10
+
+    PosImg = np.zeros((6*res,2*res,3))
+    x_pos = x*res+1*res
+    y_pos = y*res
+    cv2.circle(PosImg,(int(x_pos),int(y_pos)),5,(255,255,255))
+    cv2.line(PosImg,(int(x_pos),int(y_pos)),(int(x_pos+math.sin(math.radians(angle))*angleDist),int(y_pos - math.cos(math.radians(angle))*angleDist)),(255,255,255))
+    cv2.imshow("PositionImage",PosImg)
+
+    return
+
 if(fromCamera):
     cam = VideoCapture(0)
 
