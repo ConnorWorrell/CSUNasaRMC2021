@@ -7,6 +7,8 @@ from pyzbar.pyzbar import decode,ZBarSymbol
 # import json
 import math
 import statistics
+import logging
+logging.basicConfig(filename='ErrorLog.log',level=logging.DEBUG)
 
 fromCamera = True
 
@@ -35,8 +37,8 @@ QRCodeLocation = { #Matrix with the qr code data and the left/right/top/bottom s
 TopLeftCriteria = "ABCDEFGH"
 
 #Camera resolution
-X_Res = 700
-Y_Res = 400
+X_Res = 640
+Y_Res = 360
 CameraViewAngle = 90
 BoardWidth = 1 #Board Width in meters
 
@@ -116,7 +118,7 @@ def FindCorners(img):
         Checker = []
         for Point in QrCodeImportantPoints:
             if(Point[0].tolist() in Checker):
-                # print("Duplicate Point")
+                logging.error("Error, Duplicate points in QrCodeImportantPoints, QrCodeImportantPoints = {} pts = {}".format(QrCodeImportantPoints,pts))
                 return None, img
             Checker.append(Point[0].tolist())
 
@@ -129,8 +131,8 @@ def FindCorners(img):
 
         div = det(xdiff, ydiff)
         if div == 0:  # Handle the case where the lines are parrell
+            logging.error("Error in Find Corners Vanishing Point Calculation, lines never cross, xdiff = {} ydiff = {} QrCodeImportantPoints = {}".format(xdiff,ydiff,QrCodeImportantPoints))
             return(None,img)
-            raise Exception('lines do not intersect')
 
         d = (det(*[QrCodeImportantPoints[0][0],QrCodeImportantPoints[1][0]]), det(*[QrCodeImportantPoints[3][0],QrCodeImportantPoints[2][0]]))
         x = det(d, xdiff) / div
@@ -149,7 +151,8 @@ def FindCorners(img):
 
         #issue caused when a point is not selected
         if(BV*BC_prime-AV*AC_prime == 0): #Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-            raise Exception('BV*BC_prime-AV*AC_prime == 0')
+            logging.error("Error in Find Corners edge calculation 1, BV * BC_prime - AV * AC_prime == 0, BV = {} BC_prime = {} AV = {} AC_prime = {} A = {} B = {} VanishingPoint = {}".format(BV,BC_prime,AV,AC_prime,A,B,VanishingPoint))
+            return (None, img)
         BC=-(AB*BV*BC_prime)/(BV*BC_prime-AV*AC_prime)
 
         #Calculate the absolute edge location in pixels
@@ -170,7 +173,8 @@ def FindCorners(img):
         AC_prime = QrCodeImportantPointsLocationRealHorizontal[2]
 
         if (BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-            raise Exception('BV*BC_prime-AV*AC_prime == 0')
+            logging.error("Error in Find Corners edge calculation 2, BV * BC_prime - AV * AC_prime == 0, BV = {} BC_prime = {} AV = {} AC_prime = {} A = {} B = {} VanishingPoint = {}".format(BV,BC_prime,AV,AC_prime,A,B,VanishingPoint))
+            return (None, img)
         BC = -(AB * BV * BC_prime) / (BV * BC_prime - AV * AC_prime)
 
         # Calculate the absolute edge location in pixels
@@ -235,17 +239,18 @@ def GetDistance(Corners):
         ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b)) # Angle between board face and direction to camera, see notes for more info
     except:
         print("ThetaB1 Calculation Failure: " + str((c**2-a**2-b**2)/(-2*a*b)))
+        logging.error("Failure Calculating ThetaB1, a,b,c cannot form a triangle " + "a = {} b = {} c = {} Corners = {}".format(a,b,c,Corners))
         return None,None,None
 
     y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
 
-    x_abs=x_rel*x_CalibrationDelta-(a*x_CalibrationDelta)/2#+x_rel*x_CalibrationDelta + x_CalibrationConstant #Distance from center of board to camera location
+    x_abs=x_rel*x_CalibrationDelta-(a*x_CalibrationDelta)/2 #Distance from center of board to camera location
     y_abs=y_rel*y_CalibrationDelta+y_CalibationConstant
 
     a = -math.degrees(math.atan(x_abs / y_abs))
     b = (-(statistics.mean([Corners[0][0], Corners[1][0],Corners[2][0],Corners[3][0]])) + X_Res / 2) * CameraViewAngle / X_Res
-    # print(a, b)
+
     rotation = a + b
 
     return x_abs,y_abs,rotation
