@@ -11,6 +11,7 @@ import logging
 logging.basicConfig(filename='ErrorLog.log',level=logging.DEBUG)
 
 fromCamera = True
+Calibrating = True
 
 def Analysis(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -216,21 +217,25 @@ def FindCorners(img):
 
     return(None,img)
 
-RefDistanceRight = 0.5 #Calibration distance in m
-RefDistanceLeft = 0.5
+RefDistanceRight = 1 #Calibration distance in m
+RefDistanceLeft = 1
 RefrenceHeightRight = 200 #Calibration height in pix
 RefrenceHeightLeft = 200
 
 #Calibration for the position
-x_CalibrationDelta = 4
+x_CalibrationDelta = 1
 x_CalibrationConstant = 0
-y_CalibrationDelta = 2.5
+y_CalibrationDelta = 1
 y_CalibationConstant = 0
 
 def GetDistance(Corners):
     a = BoardWidth #Board Width in meters
     HeightMeasuredRightC = math.dist(Corners[2],Corners[1]) #Vertical height of edge of board in pix
     HeightMeasuredLeftB = math.dist(Corners[0],Corners[3]) 
+
+    if(Calibrating):
+        logging.info("Calibration Height: Left = {}, Right = {}".format(RefrenceHeightLeft,RefrenceHeightRight))
+        print("Calibration Height: Left = {}, Right = {}".format(RefrenceHeightLeft,RefrenceHeightRight))
 
     c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC #Distance from right side of board to camera
     b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB #Distance from left side of board to camera
