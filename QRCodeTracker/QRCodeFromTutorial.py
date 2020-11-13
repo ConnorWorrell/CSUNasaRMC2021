@@ -276,22 +276,23 @@ def displayPosition(x,y,angle):
 
     return
 
-if(fromCamera):
-    cam = VideoCapture(0)
+if(__name__ == "__main__"):
+    if(fromCamera):
+        cam = VideoCapture(0)
 
-    while True:
-        s, img = cam.read()
-        if s:    # frame captured without any errors
-            Corners,img = FindCorners(img)
-            if Corners != None:
-                x,y,rot = GetDistance(Corners)
-                if x != None:
-                    displayPosition(x,y,rot)
-                print(x,y)
-            cv2.imshow("Result", img)
-            cv2.waitKey(1)
-else:
+        while True:
+            s, img = cam.read()
+            if s:    # frame captured without any errors
+                Corners,img = FindCorners(img)
+                if Corners != None:
+                    x,y,rot = GetDistance(Corners)
+                    if x != None:
+                        displayPosition(x,y,rot)
+                    print(x,y)
+                cv2.imshow("Result", img)
+                cv2.waitKey(1)
+    else:
 
-    img = cv2.imread("QRCodeBoard.png")
-    Analysis(img)
-    cv2.waitKey(0)
+        img = cv2.imread("QRCodeBoard.png")
+        Analysis(img)
+        cv2.waitKey(0)
