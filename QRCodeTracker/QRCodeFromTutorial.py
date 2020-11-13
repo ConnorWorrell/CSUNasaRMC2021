@@ -132,13 +132,14 @@ def FindCorners(img):
 
         div = det(xdiff, ydiff)
         if div == 0:  # Handle the case where the lines are parrell
-            logging.error("Error in Find Corners Vanishing Point Calculation, lines never cross, xdiff = {} ydiff = {} QrCodeImportantPoints = {}".format(xdiff,ydiff,QrCodeImportantPoints))
-            return(None,img)
-
-        d = (det(*[QrCodeImportantPoints[0][0],QrCodeImportantPoints[1][0]]), det(*[QrCodeImportantPoints[3][0],QrCodeImportantPoints[2][0]]))
-        x = det(d, xdiff) / div
-        y = det(d, ydiff) / div
-        VanishingPoint = [int(x), int(y)]
+            logging.warning("Error in Find Corners Vanishing Point Calculation, lines never cross, xdiff = {} ydiff = {} QrCodeImportantPoints = {}".format(xdiff,ydiff,QrCodeImportantPoints))
+            VanishingPoint = [1000000,statistics.mean(ydiff)*1000000/statistics.mean(xdiff)]
+            #return(None,img)
+        else:
+            d = (det(*[QrCodeImportantPoints[0][0],QrCodeImportantPoints[1][0]]), det(*[QrCodeImportantPoints[3][0],QrCodeImportantPoints[2][0]]))
+            x = det(d, xdiff) / div
+            y = det(d, ydiff) / div
+            VanishingPoint = [int(x), int(y)]
 
         #Calculate the pixel location of a point along the top left edge of the qrcode array using crosspoint
         A = QrCodeImportantPoints[1][0] #point furthest to the right
