@@ -40,7 +40,7 @@ TopLeftCriteria = "ABCDEFGH"
 #Camera resolution
 X_Res = 640
 Y_Res = 360
-CameraViewAngle = 90
+CameraViewAngle = 60
 BoardWidth = 1 #Board Width in meters
 
 def FindCorners(img):
@@ -217,10 +217,10 @@ def FindCorners(img):
 
     return(None,img)
 
-RefDistanceRight = 1 #Calibration distance in m
-RefDistanceLeft = 1
-RefrenceHeightRight = 200 #Calibration height in pix
-RefrenceHeightLeft = 200
+RefDistanceRight = 2 #Calibration distance in m
+RefDistanceLeft = 2
+RefrenceHeightRight = 144 #Calibration height in pix
+RefrenceHeightLeft = 144
 
 #Calibration for the position
 x_CalibrationDelta = 1
@@ -234,8 +234,8 @@ def GetDistance(Corners):
     HeightMeasuredLeftB = math.dist(Corners[0],Corners[3]) 
 
     if(Calibrating):
-        logging.info("Calibration Height: Left = {}, Right = {}".format(RefrenceHeightLeft,RefrenceHeightRight))
-        print("Calibration Height: Left = {}, Right = {}".format(RefrenceHeightLeft,RefrenceHeightRight))
+        logging.info("Calibration Height: Left = {}, Right = {}".format(HeightMeasuredLeftB,HeightMeasuredRightC))
+        print("Calibration Height: Left = {}, Right = {}".format(HeightMeasuredLeftB,HeightMeasuredRightC))
 
     c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC #Distance from right side of board to camera
     b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB #Distance from left side of board to camera
@@ -286,7 +286,7 @@ if(fromCamera):
                 x,y,rot = GetDistance(Corners)
                 if x != None:
                     displayPosition(x,y,rot)
-                print(x,y)
+                print(x,y,rot)
             cv2.imshow("Result", img)
             cv2.waitKey(1)
 else:
