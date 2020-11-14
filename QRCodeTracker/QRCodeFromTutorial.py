@@ -215,7 +215,7 @@ x_CalibrationConstant = 0
 y_CalibrationDelta = 1
 y_CalibationConstant = 0
 
-def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistanceRight, RefrenceHeight = RefrenceHeightRight):
+def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistanceRight, RefrenceHeight = RefrenceHeightRight,h_fov = CameraViewAngle):
     try:
         X_Res = img.shape[1]
     except:
@@ -254,21 +254,26 @@ def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositi
     AB = math.dist(A, B)
     BV = math.dist(B, VanishingPt)
     AV = math.dist(A, VanishingPt)
+
     AC_prime = abs(LeftPositionOfScannedSection - .5)
     BC_prime = abs(LeftPositionOfScannedSection + WidthOfScannedSection - .5)
 
-    BC=abs((AB*BV*(BC_prime))/(BV*(BC_prime)+AV*(AC_prime)))
+    if(LeftPositionOfScannedSection < .5 and LeftPositionOfScannedSection + WidthOfScannedSection > .5): #Center of qr code lies in scanned area
+        BC=abs((AB*BV*(BC_prime))/(BV*(BC_prime)+AV*(AC_prime)))
+    elif(LeftPositionOfScannedSection > .5): # Center lies to the left of scanned area
+        BC = abs((AB * BV * (0 - BC_prime)) / (BV * (0 - BC_prime) - AV * (0 - AC_prime)))
+    else: # qr code center is to the right of scanned area
+        BC = -abs((AB * BV * (0 - BC_prime)) / (BV * (0 - BC_prime) - AV * (0 - AC_prime)))
 
     CenterOfBarcodePoint = [int(-BC * np.dot((B - A), (1, 0)) / (AB) + B[0]),
                            int(-BC * np.dot((B - A), (0, 1)) / (AB) + B[1])]  # int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
 
     # Calculate deviation of center of qr code from the center of the camera's view
-    b = (-CenterOfBarcodePoint[0] + X_Res / 2) * CameraViewAngle / X_Res
+    b = (-CenterOfBarcodePoint[0] + X_Res / 2) * h_fov / X_Res
 
     cv2.circle(img,tuple(CenterOfBarcodePoint),5,(125,255,255),5)
 
     rotation = a + b
-
     return x_abs,y_abs,rotation
 
 #x is the x position left and right from the center of the field
