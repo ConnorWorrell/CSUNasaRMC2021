@@ -1,21 +1,17 @@
-#https://www.youtube.com/watch?v=SrZuwM705yE&ab_channel=Murtaza%27sWorkshop-RoboticsandAI
-# https://www.youtube.com/watch?v=dQrUilGMz_k&ab_channel=VipulVaibhaw
-
 from cv2 import *
 import numpy as np
 from pyzbar.pyzbar import decode,ZBarSymbol
-# import json
 import math
 import statistics
 import logging
 logging.basicConfig(filename='ErrorLog.log',level=logging.DEBUG)
 
 fromCamera = True
-Calibrating = True
+Calibrating = False
 
 def Analysis(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    for barcode in decode(gray):#,symbols=[ZBarSymbol.QRCODE]):
+    for barcode in decode(gray):
         print(barcode)
         myData = barcode.data.decode('utf-8')
         pts=np.array([barcode.polygon],np.int32)
@@ -24,16 +20,16 @@ def Analysis(img):
     cv2.imshow("Result",img)
     cv2.waitKey(1)
 
-QRSize = [100,50] #Total qr code matrix size
+QRSize = [1.00,.50] #Total qr code matrix size
 QRCodeLocation = { #Matrix with the qr code data and the left/right/top/bottom side of the qr code position
-    "A":[1.3,31.58,1.35,31.58],
-    "B":[35,65,1.35,31.58],
-    "C":[68,98,1.35,31.58],
-    "D":[.68,16.2,33.7,49],
-    "E":[21.34,36.58,33.7,49],
-    "F":[42,57.5,33.7,49],
-    "G":[62.4,78,33.7,49],
-    "H":[84,99.4,33.7,49]
+    "A":[.013,.3158,.0135,.3158],
+    "B":[.35,.65,.0135,.3158],
+    "C":[.68,.98,.0135,.3158],
+    "D":[.006,.162,.337,.49],
+    "E":[.2134,.3658,.337,.49],
+    "F":[.42,.575,.337,.49],
+    "G":[.624,.78,.337,.49],
+    "H":[.84,.994,.337,.49]
 }
 TopLeftCriteria = "ABCDEFGH"
 
@@ -52,6 +48,10 @@ def FindCorners(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ArrayDecode = decode(gray)
     DataScanned = []
+
+    ImageDimensions = img.shape
+    X_Res = ImageDimensions[1]
+    Y_Res = ImageDimensions[0]
     
     for code in ArrayDecode: # Determine what barcode lables were scanned
         Data = code.data.decode('utf-8')
@@ -84,7 +84,7 @@ def FindCorners(img):
         btmPts=btmPts.sum(axis=1)
 
         # Is the resolution accurate enough to determine the board position using only the bottom barcodes
-        IsBottomRowAccurateEnough = (len(set(DataScanned) & set("DEFGH")) >= 3 or (Data in "DEFGH" and math.dist(topPts[1], topPts[0]) > 100)) #100 is the minimum height of the barcode in pix
+        IsBottomRowAccurateEnough = (len(set(DataScanned) & set("DEFGH")) >= 3 or (len(set(DataScanned) & set("DEFGH")) >= 1 and math.dist(topPts[1], topPts[0]) > 100)) #100 is the minimum height of the barcode in pix
         # Did one of the larger top barcodes get scanned
         TopRowExists = "A" in DataScanned or "B" in DataScanned or "C" in DataScanned
         # Does the bottom row exist, and is it accurate enough, or is it the only barcode scanned, if this is the case we will calculate using part or all of the bottom row
@@ -120,8 +120,14 @@ def FindCorners(img):
         for Point in QrCodeImportantPoints:
             if(Point[0].tolist() in Checker):
                 logging.error("Error, Duplicate points in QrCodeImportantPoints, QrCodeImportantPoints = {} pts = {}".format(QrCodeImportantPoints,pts))
-                return None, img
+                return None,None,None,None,None, img
             Checker.append(Point[0].tolist())
+
+        ScanLeftSideEstimateReal = np.minimum(QrCodeImportantPointsLocationRealHorizontal[0],QrCodeImportantPointsLocationRealHorizontal[3])
+        ScanRightSideEstimateReal = np.maximum(QrCodeImportantPointsLocationRealHorizontal[1],QrCodeImportantPointsLocationRealHorizontal[2])
+        WidthOfScan = ScanRightSideEstimateReal-ScanLeftSideEstimateReal
+        xPosOfLeftSideOfScan = ScanLeftSideEstimateReal
+        HeightOfScan = -np.maximum(QrCodeImportantPointsLocationRealVertical[0],QrCodeImportantPointsLocationRealVertical[1])+np.minimum(QrCodeImportantPointsLocationRealVertical[2],QrCodeImportantPointsLocationRealVertical[3])
 
         #Calculate horizontal vanishing point
         xdiff = (QrCodeImportantPoints[0][0][0] - QrCodeImportantPoints[1][0][0], QrCodeImportantPoints[3][0][0] - QrCodeImportantPoints[2][0][0])
@@ -133,35 +139,37 @@ def FindCorners(img):
         div = det(xdiff, ydiff)
         if div == 0:  # Handle the case where the lines are parrell
             logging.warning("Error in Find Corners Vanishing Point Calculation, lines never cross, xdiff = {} ydiff = {} QrCodeImportantPoints = {}".format(xdiff,ydiff,QrCodeImportantPoints))
-            VanishingPoint = [1000000,statistics.mean(ydiff)*1000000/statistics.mean(xdiff)]
-            #return(None,img)
+            VanishingPoint = [100000000000,statistics.mean(ydiff)*100000000000/statistics.mean(xdiff)]
         else:
             d = (det(*[QrCodeImportantPoints[0][0],QrCodeImportantPoints[1][0]]), det(*[QrCodeImportantPoints[3][0],QrCodeImportantPoints[2][0]]))
             x = det(d, xdiff) / div
             y = det(d, ydiff) / div
             VanishingPoint = [int(x), int(y)]
 
-        #Calculate the pixel location of a point along the top left edge of the qrcode array using crosspoint
+        #Calculate the pixel location of a point along the top left edge of the qrcode array using cross-ratio
         A = QrCodeImportantPoints[1][0] #point furthest to the right
-        B = QrCodeImportantPoints[0][0]
+        B = QrCodeImportantPoints[0][0] #point furthest to the left
 
         AB = math.dist(A,B)
         BV = math.dist(B,VanishingPoint)
         AV = math.dist(A,VanishingPoint)
-        BC_prime = QrCodeImportantPointsLocationRealHorizontal[0]
-        AC_prime = QrCodeImportantPointsLocationRealHorizontal[1]
+        BC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[0] - ScanLeftSideEstimateReal)
+        AC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[1] - ScanLeftSideEstimateReal)
 
         #issue caused when a point is not selected
         if(BV*BC_prime-AV*AC_prime == 0): #Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
             logging.error("Error in Find Corners edge calculation 1, BV * BC_prime - AV * AC_prime == 0, BV = {} BC_prime = {} AV = {} AC_prime = {} A = {} B = {} VanishingPoint = {}".format(BV,BC_prime,AV,AC_prime,A,B,VanishingPoint))
-            return (None, img)
-        BC=-(AB*BV*BC_prime)/(BV*BC_prime-AV*AC_prime)
+            return (None,None,None,None,None, img)
+        BC=-(AB*BV*(BC_prime))/(BV*(BC_prime)-AV*(AC_prime))
 
         #Calculate the absolute edge location in pixels
-        LeftTopEdgeLocation = [int(BC*np.dot((B-A),(1,0))/(AB)+B[0]),int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]#int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
+        LeftTopEdgeLocation = [int(BC*np.dot((B-A),(1,0))/(AB)+B[0]),int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
 
-        #Calculate the pixel location of a point along the top right edge of the page using crosspoint
-        BC = -(AB * AV * (QRSize[0]-AC_prime)) / (AV * (QRSize[0]-AC_prime) - BV * (QRSize[0]-BC_prime))
+        BC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[0] - ScanRightSideEstimateReal)
+        AC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[1] - ScanRightSideEstimateReal)
+
+        #Calculate the pixel location of a point along the top right edge of the page using cross-ratio
+        BC = -(AB * AV * (0-AC_prime)) / (AV * (0-AC_prime) - BV * (0-BC_prime))
         RightTopEdgeLocaiton =  [int(BC*np.dot((A-B),(1,0))/(AB)+A[0]),int(BC*np.dot((A-B),(0,1))/(AB)+A[1])]
 
         #Calculate the pixel location of a point along the bottom left edge of the page using crosspoint
@@ -171,57 +179,35 @@ def FindCorners(img):
         AB = math.dist(A, B)
         BV = math.dist(B, VanishingPoint)
         AV = math.dist(A, VanishingPoint)
-        BC_prime = QrCodeImportantPointsLocationRealHorizontal[3]
-        AC_prime = QrCodeImportantPointsLocationRealHorizontal[2]
+        BC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[3] - ScanLeftSideEstimateReal)
+        AC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[2] - ScanLeftSideEstimateReal)
 
         if (BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
             logging.error("Error in Find Corners edge calculation 2, BV * BC_prime - AV * AC_prime == 0, BV = {} BC_prime = {} AV = {} AC_prime = {} A = {} B = {} VanishingPoint = {}".format(BV,BC_prime,AV,AC_prime,A,B,VanishingPoint))
-            return (None, img)
+            return (None,None,None,None,None, img)
         BC = -(AB * BV * BC_prime) / (BV * BC_prime - AV * AC_prime)
 
         # Calculate the absolute edge location in pixels
         LeftBtmEdgeLocation = [int(BC * np.dot((B - A), (1, 0)) / (AB) + B[0]), int(BC * np.dot((B - A), (0, 1)) / (AB) + B[1])]
 
-        #Calculate the pixel location of a point along the bottom right edge of the page using crosspoint
-        BC = -(AB * AV * (QRSize[0]-AC_prime)) / (AV * (QRSize[0]-AC_prime) - BV * (QRSize[0]-BC_prime))
+        BC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[3] - ScanRightSideEstimateReal)
+        AC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[2] - ScanRightSideEstimateReal)
+
+        #Calculate the pixel location of a point along the bottom right edge of the page using cross-ratio
+        BC = -(AB * AV * (AC_prime)) / (AV * (AC_prime) - BV * (BC_prime))
         RightBtmEdgeLocaiton =  [int(BC*np.dot((A-B),(1,0))/(AB)+A[0]),int(BC*np.dot((A-B),(0,1))/(AB)+A[1])]
 
-        #Calculate pixel/cm for each side
-        LeftSideConversionY = (LeftBtmEdgeLocation[1]-LeftTopEdgeLocation[1])/(QrCodeImportantPointsLocationRealVertical[3]-QrCodeImportantPointsLocationRealVertical[0])
-        RightSideConversionY = (RightBtmEdgeLocaiton[1]-RightTopEdgeLocaiton[1])/(QrCodeImportantPointsLocationRealVertical[2]-QrCodeImportantPointsLocationRealVertical[1])
-
-        #Adjust the sides by the correct ammount in the senario that not a single barcode from one of the rows is scanned
-        Dy = -LeftSideConversionY*QrCodeImportantPointsLocationRealVertical[0]
-        Dx = ((LeftBtmEdgeLocation[0]-LeftTopEdgeLocation[0])*Dy)/(LeftBtmEdgeLocation[1]-LeftTopEdgeLocation[1])
-        LeftTopAdjusted = [int(Dx+LeftTopEdgeLocation[0]),
-                           int(Dy+LeftTopEdgeLocation[1])]
-
-        Dy = -LeftSideConversionY * (QrCodeImportantPointsLocationRealVertical[3]-QRSize[1])
-        Dx = ((LeftBtmEdgeLocation[0] - LeftTopEdgeLocation[0]) * Dy) / (
-                    LeftBtmEdgeLocation[1] - LeftTopEdgeLocation[1])
-        LeftBtmAdjusted = [int(Dx + LeftBtmEdgeLocation[0]),int(Dy + LeftBtmEdgeLocation[1])]
-
-        Dy = -RightSideConversionY * (QrCodeImportantPointsLocationRealVertical[1])
-        Dx = ((RightBtmEdgeLocaiton[0] - RightTopEdgeLocaiton[0]) * Dy) / (
-                RightBtmEdgeLocaiton[1] - RightTopEdgeLocaiton[1])
-        RightTopAdjusted = [int(Dx + RightTopEdgeLocaiton[0]), int(Dy + RightTopEdgeLocaiton[1])]
-
-        Dy = -RightSideConversionY * (QrCodeImportantPointsLocationRealVertical[2]-QRSize[1])
-        Dx = ((RightBtmEdgeLocaiton[0] - RightTopEdgeLocaiton[0]) * Dy) / (
-                RightBtmEdgeLocaiton[1] - RightTopEdgeLocaiton[1])
-        RightBtmAdjusted = [int(Dx + RightBtmEdgeLocaiton[0]), int(Dy + RightBtmEdgeLocaiton[1])]
-
-        QRArray = np.array([LeftTopAdjusted, RightTopAdjusted, RightBtmAdjusted, LeftBtmAdjusted])
+        QRArray = np.array([[LeftTopEdgeLocation, RightTopEdgeLocaiton, RightBtmEdgeLocaiton, LeftBtmEdgeLocation]])
         cv2.polylines(img, [QRArray], True, (0, 0, 255), 5)
 
-        return([LeftTopAdjusted, RightTopAdjusted, RightBtmAdjusted, LeftBtmAdjusted],img)
+        return([LeftTopEdgeLocation, RightTopEdgeLocaiton, RightBtmEdgeLocaiton, LeftBtmEdgeLocation],WidthOfScan,HeightOfScan,xPosOfLeftSideOfScan,VanishingPoint,img)
 
-    return(None,img)
+    return(None,None,None,None,None,img)
 
-RefDistanceRight = 2 #Calibration distance in m
-RefDistanceLeft = 2
-RefrenceHeightRight = 144 #Calibration height in pix
-RefrenceHeightLeft = 144
+RefDistanceRight = 1 #Calibration distance in m
+RefDistanceLeft = 1
+RefrenceHeightRight = 500 #Calibration height in pix
+RefrenceHeightLeft = 500
 
 #Calibration for the position
 x_CalibrationDelta = 1
@@ -229,17 +215,21 @@ x_CalibrationConstant = 0
 y_CalibrationDelta = 1
 y_CalibationConstant = 0
 
-def GetDistance(Corners):
-    a = BoardWidth #Board Width in meters
-    HeightMeasuredRightC = math.dist(Corners[2],Corners[1]) #Vertical height of edge of board in pix
-    HeightMeasuredLeftB = math.dist(Corners[0],Corners[3]) 
+def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistanceRight, RefrenceHeight = RefrenceHeightRight):
+    try:
+        X_Res = img.shape[1]
+    except:
+        pass
+    a = WidthOfScannedSection #Board Width in meters
+    HeightMeasuredRightC = math.dist(Corners[2],Corners[1])*.5/HeightOfScannedSection #Vertical height of edge of board in pix
+    HeightMeasuredLeftB = math.dist(Corners[0],Corners[3])*.5/HeightOfScannedSection
 
     if(Calibrating):
         logging.info("Calibration Height: Left = {}, Right = {}".format(HeightMeasuredLeftB,HeightMeasuredRightC))
         print("Calibration Height: Left = {}, Right = {}".format(HeightMeasuredLeftB,HeightMeasuredRightC))
 
-    c = RefDistanceRight*RefrenceHeightRight/HeightMeasuredRightC #Distance from right side of board to camera
-    b = RefDistanceLeft*RefrenceHeightLeft/HeightMeasuredLeftB #Distance from left side of board to camera
+    c = RefRenceDistance*RefrenceHeight/HeightMeasuredRightC #Distance from right side of board to camera
+    b = RefRenceDistance*RefrenceHeight/HeightMeasuredLeftB #Distance from left side of board to camera
 
     try:
         ThetaB1 = math.acos((c**2-a**2-b**2)/(-2*a*b)) # Angle between board face and direction to camera, see notes for more info
@@ -251,11 +241,31 @@ def GetDistance(Corners):
     y_rel = math.sin(ThetaB1)*b #Distance from left side of board to camera location
     x_rel = math.cos(ThetaB1)*b
 
-    x_abs=x_rel*x_CalibrationDelta-(a*x_CalibrationDelta)/2 #Distance from center of board to camera location
-    y_abs=y_rel*y_CalibrationDelta+y_CalibationConstant
+    x_abs=x_rel+LeftPositionOfScannedSection-.5 #Distance from center of board to camera location
+    y_abs=y_rel
 
+    # Calculate rotation if qr code is centered in camera view
     a = -math.degrees(math.atan(x_abs / y_abs))
-    b = (-(statistics.mean([Corners[0][0], Corners[1][0],Corners[2][0],Corners[3][0]])) + X_Res / 2) * CameraViewAngle / X_Res
+
+    # Calculate location of center of qr code
+    B = np.array([int(statistics.mean([Corners[1][0],Corners[2][0]])),int(statistics.mean([Corners[1][1],Corners[2][1]]))])  # mean point right
+    A = np.array([int(statistics.mean([Corners[0][0],Corners[3][0]])),int(statistics.mean([Corners[0][1],Corners[3][1]]))])  # mean point left
+
+    AB = math.dist(A, B)
+    BV = math.dist(B, VanishingPt)
+    AV = math.dist(A, VanishingPt)
+    AC_prime = abs(LeftPositionOfScannedSection - .5)
+    BC_prime = abs(LeftPositionOfScannedSection + WidthOfScannedSection - .5)
+
+    BC=abs((AB*BV*(BC_prime))/(BV*(BC_prime)+AV*(AC_prime)))
+
+    CenterOfBarcodePoint = [int(-BC * np.dot((B - A), (1, 0)) / (AB) + B[0]),
+                           int(-BC * np.dot((B - A), (0, 1)) / (AB) + B[1])]  # int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
+
+    # Calculate deviation of center of qr code from the center of the camera's view
+    b = (-CenterOfBarcodePoint[0] + X_Res / 2) * CameraViewAngle / X_Res
+
+    cv2.circle(img,tuple(CenterOfBarcodePoint),5,(125,255,255),5)
 
     rotation = a + b
 
@@ -283,9 +293,9 @@ if(__name__ == "__main__"):
         while True:
             s, img = cam.read()
             if s:    # frame captured without any errors
-                Corners,img = FindCorners(img)
+                Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan, VanishingPoint, img = FindCorners(img)
                 if Corners != None:
-                    x,y,rot = GetDistance(Corners)
+                    x, y, rot = GetDistance(Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan,VanishingPoint, img)
                     if x != None:
                         displayPosition(x,y,rot)
                     print(x,y)
