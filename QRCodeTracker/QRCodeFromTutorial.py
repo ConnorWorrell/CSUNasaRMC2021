@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(filename='ErrorLog.log',level=logging.DEBUG)
 
 fromCamera = True
-Calibrating = False
+Calibrating = True
 
 def Analysis(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -36,7 +36,7 @@ TopLeftCriteria = "ABCDEFGH"
 #Camera resolution
 X_Res = 640
 Y_Res = 360
-CameraViewAngle = 60
+
 BoardWidth = 1 #Board Width in meters
 
 def FindCorners(img):
@@ -136,6 +136,7 @@ def FindCorners(img):
         def det(a, b):
             return a[0] * b[1] - a[1] * b[0]
 
+        print(xdiff,ydiff)
         div = det(xdiff, ydiff)
         if div == 0:  # Handle the case where the lines are parrell
             logging.warning("Error in Find Corners Vanishing Point Calculation, lines never cross, xdiff = {} ydiff = {} QrCodeImportantPoints = {}".format(xdiff,ydiff,QrCodeImportantPoints))
@@ -204,18 +205,12 @@ def FindCorners(img):
 
     return(None,None,None,None,None,img)
 
-RefDistanceRight = 1 #Calibration distance in m
-RefDistanceLeft = 1
-RefrenceHeightRight = 500 #Calibration height in pix
-RefrenceHeightLeft = 500
+RefDistance = 2 #Calibration distance in m
+RefrenceHeight = 144 #Calibration height in pix
+CameraViewAngle = 60
 
-#Calibration for the position
-x_CalibrationDelta = 1
-x_CalibrationConstant = 0
-y_CalibrationDelta = 1
-y_CalibationConstant = 0
-
-def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistanceRight, RefrenceHeight = RefrenceHeightRight,h_fov = CameraViewAngle):
+def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistance, RefrenceHeight = RefrenceHeight,h_fov = CameraViewAngle):
+    global X_Res
     try:
         X_Res = img.shape[1]
     except:
@@ -282,9 +277,10 @@ def displayPosition(x,y,angle):
     res = 100# 10cm is one pix
     angleDist = 10
 
-    PosImg = np.zeros((6*res,2*res,3))
-    x_pos = x*res+1*res
-    y_pos = y*res
+    PosImg = np.zeros(((6+2)*res,(2+2)*res,3))
+    x_pos = x*res+2*res
+    y_pos = y*res+1*res
+    cv2.polylines(PosImg,[np.array([[1*res,1*res],[3*res,1*res],[3*res,7*res],[1*res,7*res]],np.int32).reshape(-1,1,2)],True,(255,255,255),3)
     cv2.circle(PosImg,(int(x_pos),int(y_pos)),5,(255,255,255))
     cv2.line(PosImg,(int(x_pos),int(y_pos)),(int(x_pos+math.sin(math.radians(angle))*angleDist),int(y_pos - math.cos(math.radians(angle))*angleDist)),(255,255,255))
     cv2.imshow("PositionImage",PosImg)
@@ -300,7 +296,7 @@ if(__name__ == "__main__"):
             if s:    # frame captured without any errors
                 Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan, VanishingPoint, img = FindCorners(img)
                 if Corners != None:
-                    x, y, rot = GetDistance(Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan,VanishingPoint, img)
+                    x,y,rot = GetDistance(Corners,WidthOfScan,HeightOfScan, xPosOfLeftSideOfScan,VanishingPoint,img)
                     if x != None:
                         displayPosition(x,y,rot)
                     print(x,y)
