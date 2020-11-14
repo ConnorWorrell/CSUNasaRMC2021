@@ -36,7 +36,7 @@ TopLeftCriteria = "ABCDEFGH"
 #Camera resolution
 X_Res = 640
 Y_Res = 360
-CameraViewAngle = 60
+
 BoardWidth = 1 #Board Width in meters
 
 def FindCorners(img):
@@ -204,18 +204,12 @@ def FindCorners(img):
 
     return(None,None,None,None,None,img)
 
-RefDistanceRight = 1 #Calibration distance in m
-RefDistanceLeft = 1
-RefrenceHeightRight = 500 #Calibration height in pix
-RefrenceHeightLeft = 500
+RefDistance = 2 #Calibration distance in m
+RefrenceHeight = 144 #Calibration height in pix
+CameraViewAngle = 60
 
-#Calibration for the position
-x_CalibrationDelta = 1
-x_CalibrationConstant = 0
-y_CalibrationDelta = 1
-y_CalibationConstant = 0
-
-def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistanceRight, RefrenceHeight = RefrenceHeightRight,h_fov = CameraViewAngle):
+def GetDistance(Corners,WidthOfScannedSection,HeightOfScannedSection, LeftPositionOfScannedSection,VanishingPt,img = None,RefRenceDistance = RefDistance, RefrenceHeight = RefrenceHeight,h_fov = CameraViewAngle):
+    global X_Res
     try:
         X_Res = img.shape[1]
     except:
@@ -300,7 +294,7 @@ if(__name__ == "__main__"):
             if s:    # frame captured without any errors
                 Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan, VanishingPoint, img = FindCorners(img)
                 if Corners != None:
-                    x, y, rot = GetDistance(Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan,VanishingPoint, img)
+                    x,y,rot = GetDistance(Corners,WidthOfScan,HeightOfScan, xPosOfLeftSideOfScan,VanishingPoint,img)
                     if x != None:
                         displayPosition(x,y,rot)
                     print(x,y)
