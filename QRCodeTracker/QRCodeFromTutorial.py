@@ -46,13 +46,13 @@ def FindCorners(img):
     QrCodeImportantPointsLocationRealHorizontal = [0,0,0,0]
     QrCodeImportantPointsLocationRealVertical = [0,0,0,0]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ArrayDecode = decode(gray)
+    ArrayDecode = decode(gray,symbols=[ZBarSymbol.QRCODE])
     DataScanned = []
 
     ImageDimensions = img.shape
     X_Res = ImageDimensions[1]
     Y_Res = ImageDimensions[0]
-    
+
     for code in ArrayDecode: # Determine what barcode lables were scanned
         Data = code.data.decode('utf-8')
         DataScanned.append(Data) #Grab which barcodes were scanned

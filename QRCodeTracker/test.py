@@ -2,6 +2,7 @@ import QRCodeFromTutorial
 import cv2
 import numpy as np
 import statistics
+import time
 
 p = 100
 # Corners,WidthOfScannedSection, LeftPositionOfScannedSection
@@ -43,6 +44,8 @@ if Corners != None:
 cv2.imshow("Result", img)
 cv2.waitKey(0)
 
+StartTime = time.perf_counter()
+
 while(cap.isOpened()):
 
     ret, img = cap.read()
@@ -73,4 +76,5 @@ rdev = [y[2] for y in deviation]
 print("Xdev: {}, Xmax: {} meters".format(statistics.stdev(xdev),max(xdev)))
 print("Ydev: {}, Ymax: {} meters".format(statistics.stdev(ydev),max(ydev)))
 print("Rdev: {}, Rmax: {} degrees".format(statistics.stdev(rdev),max(rdev)))
+print("Runtime: {} seconds".format(time.perf_counter()-StartTime))
 
