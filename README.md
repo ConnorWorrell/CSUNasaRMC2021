@@ -7,4 +7,5 @@ Calculates the probability of the robot being in an area of the arena
 #### QR Code Tracker
 Calculates a camera's position relative to a poster with an array of qrcodes on it
 #### Robot CAD
-Stores the current public release version of the cad files
+Stores the current public release version of the cad files.
+The main assembly is named "RAMBOT Full Assembly_(11-25-20).SLDASM"
