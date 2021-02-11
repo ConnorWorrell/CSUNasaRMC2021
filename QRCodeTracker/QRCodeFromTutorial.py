@@ -287,12 +287,48 @@ def displayPosition(x,y,angle):
 
     return
 
+def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation = inter)
+
+    # return the resized image
+    return resized
+
 if(__name__ == "__main__"):
     if(fromCamera):
         cam = VideoCapture(0)
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)   #force 1080p
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT,1080)
 
         while True:
             s, img = cam.read()
+
+            print(img.shape)
+
             if s:    # frame captured without any errors
                 Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan, VanishingPoint, img = FindCorners(img)
                 if Corners != None:
@@ -300,7 +336,8 @@ if(__name__ == "__main__"):
                     if x != None:
                         displayPosition(x,y,rot)
                     print(x,y)
-                cv2.imshow("Result", img)
+
+                cv2.imshow("Result",image_resize(img,720,480))
                 cv2.waitKey(1)
     else:
 
