@@ -1,0 +1,4 @@
+
+
+def InitilizeCommunication():
+    pass
