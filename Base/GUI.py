@@ -28,9 +28,13 @@ class GUI(Widget):
         self.add_widget(self.commandField)
         Window.bind(on_resize = self.on_window_resize)
 
-        self.AboveCommandText = Label(text = "Hello World",halign = "left",valign = "middle")
+        self.AboveCommandText = Label(text = "Hello World",halign = "left",valign = "bottom")
         self.AboveCommandText.bind(size = self.AboveCommandText.setter('text_size')) #Actually aligns the text to left
         self.add_widget(self.AboveCommandText)
+
+        self.InfoText = Label(text = "jdfkld;\njfdklsa\njfdklsa\njfdkl;sa\nfjdk;la\njfdklsa\njfkdsl;a",halign = "left",valign = "top")
+        self.InfoText.bind(size = self.InfoText.setter('text_size'))
+        self.add_widget(self.InfoText)
 
         self.FieldImage = Image()#,pos = (200,200),size = (200,200))
         self.CameraImage1 = Image()
@@ -54,19 +58,22 @@ class GUI(Widget):
     def on_window_resize(self,window,width,height):
         seperation = width*(1/80)
         fontSize = height / 20 - 15
+        InfoTextWidth = width/10
+
         self.commandField.size = (width-2*seperation, height / 20)
         self.commandField.pos = (seperation, seperation)
         self.commandField.font_size = fontSize
 
         self.AboveCommandText.size = self.commandField.size
-        self.AboveCommandText.pos = (seperation, self.commandField.pos[1]+self.commandField.size[1])
+        self.AboveCommandText.pos = (seperation, self.commandField.pos[1]+self.commandField.size[1]+.5*seperation)
         self.AboveCommandText.font_size = fontSize
+        self.AboveCommandText.bind(size=self.AboveCommandText.setter('text_size'))
 
-        self.FieldImage.pos = (seperation, self.AboveCommandText.pos[1]+self.AboveCommandText.font_size+seperation*1.5)
+        self.FieldImage.pos = (seperation, self.AboveCommandText.pos[1]+self.AboveCommandText.font_size+seperation)
         FieldHeight = height-(self.FieldImage.pos[1]+seperation)
         self.FieldImage.size = ((2/6)*FieldHeight,FieldHeight)
 
-        CameraWidth = (width-4*seperation-self.FieldImage.size[0])/3
+        CameraWidth = (width-4*seperation-self.FieldImage.size[0])/2-InfoTextWidth
         self.CameraImage1.size = (CameraWidth,CameraWidth*1080/1920)
         self.CameraImage1.pos = (self.FieldImage.pos[0]+self.FieldImage.size[0]+seperation,height-seperation-self.CameraImage1.size[1])
 
@@ -78,6 +85,14 @@ class GUI(Widget):
 
         self.CameraImage4.size = (CameraWidth, CameraWidth * 1080 / 1920)
         self.CameraImage4.pos = (self.CameraImage2.pos[0],self.CameraImage3.pos[1])
+
+        self.InfoText.font_size = fontSize
+        self.InfoText.bind(size=self.InfoText.setter('text_size'))
+        self.InfoText.pos = (self.CameraImage4.pos[0]+self.CameraImage4.size[0]+seperation, self.AboveCommandText.pos[1]+self.AboveCommandText.size[1]+seperation)
+        self.InfoText.size = (InfoTextWidth - 2*seperation, height - self.InfoText.pos[1]-seperation)
+        # self.InfoText.pos = (200,200)
+
+
 
     def img2Texture(self,img):
         buf1 = cv2.flip(img, 0)
