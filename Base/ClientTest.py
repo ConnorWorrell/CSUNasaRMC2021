@@ -12,7 +12,7 @@ local_hostname = socket.gethostname()
 local_fqdn = socket.getfqdn()
 
 # get the according IP address
-ip_address = "192.168.0.101"#socket.gethostbyname(local_hostname)
+ip_address = "192.168.0.100"#socket.gethostbyname(local_hostname)
 
 print(ip_address)
 # bind the socket to the port 23456, and connect
@@ -23,7 +23,7 @@ print("connecting to %s (%s) with %s" % (local_hostname, local_fqdn, ip_address)
 import pickle
 import struct
 
-DataToSend = 1
+DataToSend = {"c": 0, "b": 0, "a": 0}
 
 data = pickle.dumps(DataToSend, 0)
 size = len(data)
