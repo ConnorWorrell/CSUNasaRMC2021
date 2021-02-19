@@ -51,9 +51,12 @@ while(1):
     # print("{}: {}".format(frame, size))
     startsend = time.time()
     sock.sendall(struct.pack(">L", size) + data)
+    responce = sock.recv(1024)
     framenum = framenum + 1
     print(max(0,.0333-time.time()+startsend)[0][0])
     time.sleep(max(0,.0333-time.time()+startsend)[0][0])
+
+    print("Recieved: ", responce)
 
 # close connection
 sock.close()
