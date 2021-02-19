@@ -8,7 +8,7 @@ p = 100
 # Corners,WidthOfScannedSection, LeftPositionOfScannedSection
 # Corners,WidthOfScan,HeightOfScan,xPosOfLeftSideOfScan,img = QRCodeFromTutorial.GetDistance([[0, 0], [p, 0], [p, p], [0, p]],1,0)
 
-Test = 3
+Test = 2
 if(Test == 1):
     cap = cv2.VideoCapture('QrCodeTestVideo640.avi')
     RefD = 1.619

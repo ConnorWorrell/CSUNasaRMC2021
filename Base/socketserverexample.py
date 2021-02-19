@@ -57,6 +57,9 @@ while True:
                 frame = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
                 frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
                 cv2.imshow('ImageWindow', frame)
+
+                connection.sendall("Frame Recieved".encode("utf-8"))
+
                 cv2.waitKey(1)
 
                 # output received data
@@ -64,6 +67,7 @@ while True:
             else:
                 # no more data -- quit the loop
                 print ("no more data.")
+
                 break
     finally:
         # Clean up the connection
