@@ -37,11 +37,14 @@ while True:
         print ('connection from', client_address)
 
         data = b""
+        previousdata = None
         # receive the data in small chunks and print it
         while True:
+
             while len(data) < payload_size:
                 data += connection.recv(4096)
-            # if data:
+                # print(data)
+            # if data != previousdata:
             packed_msg_size = data[:payload_size]
             data = data[payload_size:]
             msg_size = struct.unpack(">L", packed_msg_size)[0]
@@ -57,12 +60,13 @@ while True:
             CommunicationUpdate = pickle.loads(CommunicationData, fix_imports=True, encoding="bytes")
 
             # output received data
-            print ("Data: %s" % data)
+            # print ("Data: %s" % data)
             print(CommunicationUpdate)
             # else:
-            #     # no more data -- quit the loop
-            #     print ("no more data.")
-            #     break
+                # no more data -- quit the loop
+            print ("no more data.")
+            break
+            # previousdata = data
     finally:
         # Clean up the connection
         connection.close()
