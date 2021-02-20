@@ -1,29 +1,22 @@
-import kivy
 from kivy.app import App
-kivy.require('1.9.0')
 from kivy.uix.textinput import TextInput
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.core.window import Window
 from kivy.uix.image import Image
 from cv2 import *
-from kivy.properties import ObjectProperty
-import pygame
-from kivy.core.image.img_pygame import ImageLoaderPygame
-import io
 from kivy.graphics.texture import Texture
 from kivy.clock import Clock
 from kivy.uix.label import Label
+import commands
 
 class GUI(Widget):
     def __init__(self, **kwargs):
         super(GUI, self).__init__(**kwargs)
 
         # self.cam = VideoCapture(0)
-
+        self.connected = [False,None]
         self.commandField = TextInput(pos = (200, 200), size = (100, 400), multiline = False)
-        self.commandField.bind(on_text_validate = self.on_enter) ### first line
+        self.commandField.bind(on_text_validate = self.command_on_enter) ### first line
         # self.username.bind(text= self.on_text)  ### second line
         self.add_widget(self.commandField)
         Window.bind(on_resize = self.on_window_resize)
@@ -51,9 +44,10 @@ class GUI(Widget):
 
         self.on_window_resize(Window,Window.size[0],Window.size[1])
 
-    def on_enter(instance, value):
-        print(value.text)
-        value.text = ""
+    def command_on_enter(self,value):
+        command = value.text
+        self.commandField.text = ""
+        commands.parse(command)
 
     def on_window_resize(self,window,width,height):
         seperation = width*(1/80)
@@ -110,7 +104,16 @@ class GUI(Widget):
         # self.FieldImage.texture = self.img2Texture(self.fieldimg)
         # cv2.imshow("CV2 Image", img)
         # convert it to texture
+    def GUIUpdateText(self,command,update):
+        if(command == "connected"):
+            self.connected = update
 
+        text = ""
+        if(self.connected[0] == True):
+            text = text + "[color=9af075]Connected: " + str(self.connected[1]) + "[/color]\n"
+        else:
+            text = text + "[color=fa9134]Not Connected[/color]\n"
+        self.InfoText.text = text
     #
     # def on_text(instance, value, secondvalue):
     #     print(secondvalue)
@@ -121,5 +124,5 @@ class GUIApp(App):
         return GUI()
 
 
-if __name__ == "__main__":
-    GUIApp().run()
+# if __name__ == "__main__":
+#     GUIApp().run()
