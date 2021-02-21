@@ -1,16 +1,23 @@
 from kivy.app import App
-from kivy.uix.textinput import TextInput
+# from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
-from kivy.core.window import Window
-from kivy.uix.image import Image
+# from kivy.core.window import Window
+# from kivy.uix.image import Image
 from cv2 import *
-from kivy.graphics.texture import Texture
-from kivy.clock import Clock
-from kivy.uix.label import Label
+# from kivy.graphics.texture import Texture
+# from kivy.clock import Clock
+# from kivy.uix.label import Label
 import commands
+import globals
 
 class GUI(Widget):
     def __init__(self, **kwargs):
+        from kivy.uix.textinput import TextInput
+        from kivy.core.window import Window
+        from kivy.uix.image import Image
+        from kivy.graphics.texture import Texture
+        from kivy.clock import Clock
+        from kivy.uix.label import Label
         super(GUI, self).__init__(**kwargs)
 
         # self.cam = VideoCapture(0)
@@ -40,7 +47,7 @@ class GUI(Widget):
         self.add_widget(self.CameraImage3)
         self.add_widget(self.CameraImage4)
 
-        Clock.schedule_interval(self.Update_Image, 1.0 / 33.0)
+        Clock.schedule_interval(self.Update_Screen, 1.0 / 33.0)
 
         self.on_window_resize(Window,Window.size[0],Window.size[1])
 
@@ -98,7 +105,8 @@ class GUI(Widget):
         # self.image.texture = texture1
         return texture1
 
-    def Update_Image(self,x):
+    def Update_Screen(self,x):
+        self.InfoText.text = str(globals.sharedData["DataRecieved"])
         pass
         # s, img = self.cam.read()
         # self.FieldImage.texture = self.img2Texture(self.fieldimg)

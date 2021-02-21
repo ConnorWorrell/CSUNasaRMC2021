@@ -1,7 +1,7 @@
 import socket
 
 def InitilizeCommunication (ip_address):
-    if(ip_address == None):
+    if(ip_address == None or ip_address == "0"):
         ip_address = "192.168.0.100"
 
     # create TCP/IP socket
@@ -61,15 +61,26 @@ def CheckRecieveData():
     print("Recieved Data: " + str(CommunicationUpdate))
     return CommunicationUpdate
 
-def ListenForData(ip_address):
+import time
+import globals
+def ListenForData(SharedData,ip_address):
     InitilizeCommunication(ip_address)
+    timelast = time.time()
     while True:
-        print("Waiting for data...")
+        SendData(SharedData["DataToSend"])
+        SharedData["DataToSend"] = {}
+        time.sleep(0.5)
         data = CheckRecieveData()
+        SharedData["DataRecieved"] = data
+        SharedData["NewDataRecieved"] = True
         print("Data Recieved: " + str(data))
+        print("Ping: " + str(time.time()-timelast))
+        timelast = time.time()
+
 
 from multiprocessing import Process
+import globals
 def StartProcess(ip_address):
     print(ip_address)
-    p = Process(target=ListenForData, args=())
+    p = Process(target=ListenForData, args=(globals.sharedData,ip_address))
     p.start()

@@ -1,10 +1,13 @@
 import GUI
 import CommunicationBase
+import globals
 
 if __name__ == '__main__':
-    # CommunicationBase.ListenForData(None)
-
+    globals.initilizeGlobals()
     # pass
-    # CommunicationBase.StartProcess(None)
+    # CommunicationBase.ListenForData(None)
+    # print(globals.dataToSend)
+    # pass
+    # CommunicationBase.StartProcess("0")
     GUIApp = GUI.GUIApp()
     GUIApp.run()
