@@ -75,6 +75,25 @@ def SendData(DataToSend):
     global connection
     connection.sendall(struct.pack(">L", size) + data)
 
+import time
+# import globals
+def StartCommunication(sharedData):
+    InitilizeCommunication()
+    timelast = time.time()
+    while True:
+        # print(sharedData)
+        time.sleep(.5)
+        data = CheckRecieveData()
+        sharedData["DataRecieved"] = data
+        sharedData["NewDataRecieved"] = True
+        print("Data Recieved: " + str(data))
+        time.sleep(0.5)
+        SendData(sharedData["DataToSend"])
+        sharedData["DataToSend"] = {}
+        print("ping: " + str(time.time()-timelast))
+        timelast=time.time()
+
+
 # def ListenForData():
 #     while True:
 #         data = CheckRecieveData()
