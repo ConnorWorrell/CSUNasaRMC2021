@@ -82,11 +82,11 @@ def StartCommunication(sharedData):
     timelast = time.time()
     while True:
         # print(sharedData)
-        time.sleep(.5)
+        # time.sleep(.5)
         data = CheckRecieveData()
         sharedData["DataRecieved"] = data
         sharedData["NewDataRecieved"] = True
-        print("Data Recieved: " + str(data))
+        print("Data Recieved")
         time.sleep(0.5)
         SendData(sharedData["DataToSend"])
         sharedData["DataToSend"] = {}

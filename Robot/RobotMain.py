@@ -3,11 +3,12 @@ import CommunicationRobot
 from multiprocessing import Process
 from StateMachine import StateMachine as SM1
 import globals
+from cv2 import *
 
 # Initilize Sensors + Motors
-# Cameras = Cam1()
+Cameras = Cam1()
 # Cameras.AddCamera(640,480,.25,0,90,1,500,120)
-# Cameras.AddCamera(1920,1080,0,0,1,500,120)
+Cameras.AddCamera(1920,1080,0,0,0,1,500,120)
 # Cameras.AnalizeCameras()
 # while(1):
 #     Cameras.AnalizeCameras()
@@ -16,6 +17,38 @@ import globals
 # Initilize other cameras and sensors here
 
 # ListenForData()
+
+def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation=inter)
+
+    # return the resized image
+    return resized
+
 if __name__ == '__main__':
     globals.initilizeGlobals()
     sharedData = globals.sharedData
@@ -30,7 +63,14 @@ if __name__ == '__main__':
     while True:
         # print("updates")
         # print(sharedData)
-        sharedData["DataToSend"] = random.randint(0,10000)
+        Cameras.AnalizeCameras()
+        Encoded = []
+        for i in Cameras.LastFrames:
+            # print(cv2.imencode(".jpg",i,[int(cv2.IMWRITE_JPEG_QUALITY),90]))
+            img_r = image_resize(i,200,200)
+            Encoded.append(cv2.imencode(".jpg",img_r,[int(cv2.IMWRITE_JPEG_QUALITY),90])[1].tobytes())
+        sharedData["DataToSend"] = {"CameraFrames" : Encoded}
+
         time.sleep(1)
 
 # CommunicationRobot.SendData((1,2,3,4,5,6,7,8,9,101,12))

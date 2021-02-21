@@ -10,7 +10,7 @@ def initilizeGlobals():
     global sharedData
     # dataToSend = manager.dict()
     sharedData = manager.dict()
-    sharedData["DataToSend"] = {}
+    sharedData["DataToSend"] = {"CameraFrames":[]}
     # readyToSend = False
     # dataRecieved = manager.dict()
     sharedData["DataRecieved"] = {}

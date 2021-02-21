@@ -44,6 +44,7 @@ class Cameras:
         self.TopLeftCriteria = "ABCDEFGH"
         self.RobotLocationInfo = [0,0,0] #X_pos,Y_pos,Rotation
         self.SmoothingFactor = 5
+        self.LastFrames = []
 
     def image_resize(self,image, width = None, height = None, inter = cv2.INTER_AREA):
         # initialize the dimensions of the image to be resized and
@@ -92,8 +93,10 @@ class Cameras:
         NewCamera.SetCamera(cam,ResWidth,ResHeight,RelXPosition,RelYPosition,RelRotation,RefDist,RefHeight,FOV)
 
         self.CameraStorage.append(NewCamera)
+        self.LastFrames.append(None)
 
     def FindCorners(self,img):
+        import math
         font_face = cv2.FONT_HERSHEY_SIMPLEX
         VanishingPoint = []
         QrCodeImportantPoints = [[[10000, 10000]], [[-10000, 10000]], [[-10000, -10000]],
@@ -155,6 +158,7 @@ class Cameras:
                         not BottomRowUsedInCalculation and Data in "ABC"))
 
             # Evaluate which points are closer to the edge of the board
+            import math
             for pt in pts:
                 if (math.dist([0, 0], pt[0]) < math.dist([0, 0], QrCodeImportantPoints[0][
                     0]) and CurrentCodeinTopRow and pt in topPts):  # TopLeft
@@ -368,7 +372,8 @@ class Cameras:
             Camera = self.CameraStorage[CameraIndex]
             s, img = Camera.cam.read()
             Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan, VanishingPoint, img = self.FindCorners(img)
-            cv2.imshow("Camera"+str(CameraIndex), self.image_resize(img, 720, 480))
+            self.LastFrames[CameraIndex] = img
+            # cv2.imshow("Camera"+str(CameraIndex), self.image_resize(img, 720, 480))
             if Corners != None:
                 x, y, rot = self.GetDistance(Corners, WidthOfScan, HeightOfScan, xPosOfLeftSideOfScan, VanishingPoint, Camera.ResWidth,Camera.RefDist,Camera.RefHeight,Camera.FOV)
                 if(x == None or y == None or rot == None):
@@ -382,7 +387,7 @@ class Cameras:
                 self.RobotLocationInfo = [statistics.mean(X)/self.SmoothingFactor+SmoothingFactor2*self.RobotLocationInfo[0]/self.SmoothingFactor,
                                           statistics.mean(Y)/self.SmoothingFactor+SmoothingFactor2*self.RobotLocationInfo[1]/self.SmoothingFactor,
                                           statistics.mean(Rot)/self.SmoothingFactor+SmoothingFactor2*self.RobotLocationInfo[2]/self.SmoothingFactor]
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
 
     def displayPosition(self):
         RobotHeight = 1/2
