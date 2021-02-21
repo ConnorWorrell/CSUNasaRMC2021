@@ -96,6 +96,7 @@ class GUI(Widget):
 
 
     def img2Texture(self,img):
+        from kivy.graphics.texture import Texture
         buf1 = cv2.flip(img, 0)
         buf = buf1.tostring()
         texture1 = Texture.create(size=(img.shape[1], img.shape[0]), colorfmt='bgr')
@@ -105,8 +106,17 @@ class GUI(Widget):
         # self.image.texture = texture1
         return texture1
 
+
     def Update_Screen(self,x):
-        self.InfoText.text = str(globals.sharedData["DataRecieved"])
+        import numpy as np
+        # self.InfoText.text = str(globals.sharedData["DataRecieved"])
+        if(globals.sharedData["NewDataRecieved"] == True):
+            # frame =globals.sharedData["DataRecieved"]['CameraFrames'][0]
+            # print(globals.sharedData["DataRecieved"]['CameraFrames'][0])
+            nparr = np.frombuffer(globals.sharedData["DataRecieved"]["CameraFrames"][0], np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            self.CameraImage1.texture = self.img2Texture(frame)
+            globals.sharedData["NewDataRecieved"] = False
         pass
         # s, img = self.cam.read()
         # self.FieldImage.texture = self.img2Texture(self.fieldimg)
