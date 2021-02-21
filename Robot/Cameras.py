@@ -364,6 +364,12 @@ class Cameras:
         rotation = a + b
         return x_abs, y_abs, rotation
 
+    def UpdateFrameData(self):
+        for CameraIndex in range(len(self.CameraStorage)):
+            Camera = self.CameraStorage[CameraIndex]
+            s, img = Camera.cam.read()
+            self.LastFrames[CameraIndex] = img
+
     def AnalizeCameras(self):
         X = []
         Y = []
