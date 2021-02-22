@@ -186,10 +186,15 @@ class Cameras:
             # This ignores if duplicate points are in ImportantPoints
             Checker = []
             for Point in QrCodeImportantPoints:
-                if (Point[0].tolist() in Checker):
-                    # logging.error(
-                    #     "Error, Duplicate points in QrCodeImportantPoints, QrCodeImportantPoints = {} pts = {}".format(
-                    #         QrCodeImportantPoints, pts))
+                try:
+                    Point[0].tolist()
+                        # logging.error(
+                        #     "Error, Duplicate points in QrCodeImportantPoints, QrCodeImportantPoints = {} pts = {}".format(
+                        #         QrCodeImportantPoints, pts))
+                        # return None, None, None, None, None, img
+                except:
+                    print(Point)
+                    print(Point[0])
                     return None, None, None, None, None, img
                 Checker.append(Point[0].tolist())
 

@@ -13,6 +13,7 @@ def initilizeGlobals():
     sharedData["DataToSend"] = {"CameraFrames":[]}
     # readyToSend = False
     # dataRecieved = manager.dict()
-    sharedData["DataRecieved"] = {}
+    sharedData["DataRecieved"] = {"commands":[]}
     # newDataRecieved = Value('i',0)
     sharedData["NewDataRecieved"] = False
+    sharedData["Ping"] = .1
