@@ -63,11 +63,11 @@ def CheckRecieveData():
     # print(CommunicationUpdate)
     # no more data -- quit the loop
     # print("no more data.")
-    print("Recieved Data: " + str(CommunicationUpdate))
+    # print("Recieved Data: " + str(CommunicationUpdate))
     return CommunicationUpdate
 
 def SendData(DataToSend):
-    print("Sending: " + str(DataToSend))
+    # print("Sending: " + str(DataToSend))
 
     data = pickle.dumps(DataToSend, 0)
     size = len(data)
@@ -84,13 +84,21 @@ def StartCommunication(sharedData):
         # print(sharedData)
         # time.sleep(.5)
         data = CheckRecieveData()
-        sharedData["DataRecieved"] = data
-        sharedData["NewDataRecieved"] = True
-        print("Data Recieved")
-        time.sleep(0.5)
+        for key in data.keys():
+        # if "commands" in data:
+            tmp = sharedData["DataRecieved"]
+            if key not in tmp:
+                tmp[key] = []
+            tmp[key] = tmp[key] + data[key]
+            sharedData["DataRecieved"] = tmp#{"commands":tmp + data["commands"]}
+            # sharedData["DataRecieved"] = data
+            sharedData["NewDataRecieved"] = True
+        # print("Data Recieved")
+        # print(sharedData["DataRecieved"])
+        time.sleep(sharedData["Ping"])
         SendData(sharedData["DataToSend"])
         sharedData["DataToSend"] = {}
-        print("ping: " + str(time.time()-timelast))
+        # print("ping: " + str(time.time()-timelast))
         timelast=time.time()
 
 
