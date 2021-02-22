@@ -9,8 +9,19 @@ def parse(command):
         if(len(commands) < 2):
             commands.append("0")
         CommunicationBase.StartProcess(commands[1])
+    elif(commands[0].lower() == "other"):
+        globals.SendOther("other",commands)
+    elif(commands[0].lower() == "ping"):
+        globals.sharedData["LocalPing"] = float(commands[1])
+        globals.SendCommand(commands)
     else:
-        globals.dataToSend["commands"] = [[commands]]
+        globals.SendCommand(commands)
+        # if "commands" in globals.sharedData["DataToSend"]:
+        #     tmp = globals.sharedData["DataToSend"]["commands"]
+        #     tmp.append(commands)
+        #     globals.sharedData["DataToSend"] = {"test":tmp}
+        # else:
+        #     globals.sharedData["DataToSend"] = {"commands": [commands]}
         # CommunicationBase.StartProcess(commands[1])
     # elif(commands[0].lower() == "send"):
     #     CommunicationBase.SendData([1,2,3,4,5,[1,2,3,4,5]]*1000)

@@ -117,7 +117,7 @@ class GUI(Widget):
             frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             self.CameraImage1.texture = self.img2Texture(frame)
             globals.sharedData["NewDataRecieved"] = False
-        pass
+        # pass
         # s, img = self.cam.read()
         # self.FieldImage.texture = self.img2Texture(self.fieldimg)
         # cv2.imshow("CV2 Image", img)

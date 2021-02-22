@@ -28,7 +28,7 @@ def InitilizeCommunication (ip_address):
 import pickle
 import struct
 def SendData(DataToSend):
-    print("Sending")
+    # print("Sending")
     data = pickle.dumps(DataToSend, 0)
     size = len(data)
 
@@ -58,7 +58,7 @@ def CheckRecieveData():
     # print(CommunicationUpdate)
     # no more data -- quit the loop
     # print("no more data.")
-    print("Recieved Data")
+    # print("Recieved Data")
     return CommunicationUpdate
 
 import time
@@ -69,13 +69,13 @@ def ListenForData(SharedData,ip_address):
     while True:
         SendData(SharedData["DataToSend"])
         SharedData["DataToSend"] = {}
-        time.sleep(0.5)
+        time.sleep(SharedData["LocalPing"])
         data = CheckRecieveData()
         if data != {}:
             SharedData["DataRecieved"] = data
             SharedData["NewDataRecieved"] = True
-        print("Data Recieved: " + str(data))
-        print("Ping: " + str(time.time()-timelast))
+        # print("Data Recieved: " + str(data))
+        # print("Ping: " + str(time.time()-timelast))
         timelast = time.time()
 
 
