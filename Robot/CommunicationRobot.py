@@ -99,6 +99,7 @@ def StartCommunication(sharedData):
         SendData(sharedData["DataToSend"])
         sharedData["DataToSend"] = {}
         # print("ping: " + str(time.time()-timelast))
+        sharedData["LastConnectTime"] = time.time()
         timelast=time.time()
 
 

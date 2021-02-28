@@ -17,3 +17,4 @@ def initilizeGlobals():
     # newDataRecieved = Value('i',0)
     sharedData["NewDataRecieved"] = False
     sharedData["Ping"] = .1
+    sharedData["LastConnectTime"] = 0

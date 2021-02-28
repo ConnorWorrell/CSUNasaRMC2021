@@ -13,3 +13,6 @@ def CommandEval(key,comm):
     print("Parse: " + key + " " + str(" ".join(comm)))
     if(comm[0] == "ping"):
         globals.sharedData["Ping"] = float(comm[1])
+
+def StopEverything():
+    print("Timedout, Stopping Everything")
