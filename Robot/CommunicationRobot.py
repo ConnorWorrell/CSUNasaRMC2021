@@ -81,26 +81,33 @@ def StartCommunication(sharedData):
     InitilizeCommunication()
     timelast = time.time()
     while True:
-        # print(sharedData)
-        # time.sleep(.5)
-        data = CheckRecieveData()
-        for key in data.keys():
-        # if "commands" in data:
-            tmp = sharedData["DataRecieved"]
-            if key not in tmp:
-                tmp[key] = []
-            tmp[key] = tmp[key] + data[key]
-            sharedData["DataRecieved"] = tmp#{"commands":tmp + data["commands"]}
-            # sharedData["DataRecieved"] = data
-            sharedData["NewDataRecieved"] = True
-        # print("Data Recieved")
-        # print(sharedData["DataRecieved"])
-        time.sleep(sharedData["Ping"])
-        SendData(sharedData["DataToSend"])
-        sharedData["DataToSend"] = {}
-        # print("ping: " + str(time.time()-timelast))
-        sharedData["LastConnectTime"] = time.time()
-        timelast=time.time()
+        try:
+            # print(sharedData)
+            # time.sleep(.5)
+            data = CheckRecieveData()
+            for key in data.keys():
+            # if "commands" in data:
+                tmp = sharedData["DataRecieved"]
+                if key not in tmp:
+                    tmp[key] = []
+                tmp[key] = tmp[key] + data[key]
+                sharedData["DataRecieved"] = tmp#{"commands":tmp + data["commands"]}
+                # sharedData["DataRecieved"] = data
+                sharedData["NewDataRecieved"] = True
+            # print("Data Recieved")
+            # print(sharedData["DataRecieved"])
+            time.sleep(sharedData["Ping"])
+            SendData(sharedData["DataToSend"])
+            sharedData["DataToSend"] = {}
+            # print("ping: " + str(time.time()-timelast))
+            sharedData["LastConnectTime"] = time.time()
+            timelast=time.time()
+        except:
+            print("connection closed")
+            timelast = 0
+            InitilizeCommunication()
+
+
 
 
 # def ListenForData():
