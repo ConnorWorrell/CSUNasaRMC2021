@@ -18,6 +18,7 @@ def initilizeGlobals():
     sharedData["LocalPing"] = .1
     sharedData["LastConnectTime"] = 0
     sharedData["ConnectedAddress"] = None
+    sharedData["ConnectionStatus"] = 2  # Reconnecting
 
 def SendOther(key,command):
     if key in sharedData["DataToSend"]:

@@ -68,17 +68,39 @@ def ListenForData(SharedData,ip_address):
     SharedData["ConnectedAddress"] = ip_address
     timelast = time.time()
     while True:
-        SendData(SharedData["DataToSend"])
-        SharedData["DataToSend"] = {}
-        time.sleep(SharedData["LocalPing"])
-        data = CheckRecieveData()
-        if data != {}:
-            SharedData["DataRecieved"] = data
-            SharedData["NewDataRecieved"] = True
-        # print("Data Recieved: " + str(data))
-        # print("Ping: " + str(time.time()-timelast))
-        SharedData["LastConnectTime"] = time.time()
-        # timelast = time.time()
+        try:
+            SendData(SharedData["DataToSend"])
+            SharedData["DataToSend"] = {}
+            time.sleep(SharedData["LocalPing"])
+            data = CheckRecieveData()
+            if data != {}:
+                SharedData["DataRecieved"] = data
+                SharedData["NewDataRecieved"] = True
+            # print("Data Recieved: " + str(data))
+            # print("Ping: " + str(time.time()-timelast))
+            SharedData["LastConnectTime"] = time.time()
+            SharedData["ConnectionStatus"] = 0 # Connected
+            # timelast = time.time()
+        except:
+            print("connection closed")
+            reconnectionAttempts = 5
+            Attempts = 0
+            for i in range (reconnectionAttempts):
+                SharedData["ConnectionStatus"] = 1 # Reconnecting
+                Attempts = Attempts + 1
+                try:
+                    print("Attempting Reconnect: " + str(i+1))
+                    sock.close()
+                    [tmp, ip_address] = InitilizeCommunication("0")
+                    SharedData["ConnectedAddress"] = ip_address
+                    timelast = time.time()
+                    break
+                except Exception:
+                    pass
+            if(Attempts == reconnectionAttempts):
+                SharedData["ConnectionStatus"] = 2  # Disconnected
+                print("Failed to reconnect, ending connection task")
+                break
 
 
 from multiprocessing import Process
