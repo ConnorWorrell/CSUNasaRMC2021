@@ -114,9 +114,21 @@ class GUI(Widget):
         if(globals.sharedData["NewDataRecieved"] == True):
             # frame =globals.sharedData["DataRecieved"]['CameraFrames'][0]
             # print(globals.sharedData["DataRecieved"]['CameraFrames'][0])
-            nparr = np.frombuffer(globals.sharedData["DataRecieved"]["CameraFrames"][0], np.uint8)
-            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            self.CameraImage1.texture = self.img2Texture(frame)
+            Frames = []
+            for frame in globals.sharedData["DataRecieved"]["CameraFrames"]:
+                nparr = np.frombuffer(frame, np.uint8)
+                frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                Frames.append(frame)
+
+            if(len(Frames) >= 1):   # This should be a switch statement, but python switch statements are funky
+                self.CameraImage1.texture = self.img2Texture(Frames[0])
+            if(len(Frames) >= 2):
+                self.CameraImage2.texture = self.img2Texture(Frames[1])
+            if (len(Frames) >= 3):
+                self.CameraImage3.texture = self.img2Texture(Frames[2])
+            if (len(Frames) >= 4):
+                self.CameraImage4.texture = self.img2Texture(Frames[3])
+
             globals.sharedData["NewDataRecieved"] = False
             self.connected = globals.sharedData["ConnectedAddress"]
         ping = time.time()-globals.sharedData["LastConnectTime"]
