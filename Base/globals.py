@@ -16,6 +16,8 @@ def initilizeGlobals():
     # newDataRecieved = Value('i',0)
     sharedData["NewDataRecieved"] = False
     sharedData["LocalPing"] = .1
+    sharedData["LastConnectTime"] = 0
+    sharedData["ConnectedAddress"] = None
 
 def SendOther(key,command):
     if key in sharedData["DataToSend"]:

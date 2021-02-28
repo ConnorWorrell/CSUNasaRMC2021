@@ -64,7 +64,8 @@ def CheckRecieveData():
 import time
 import globals
 def ListenForData(SharedData,ip_address):
-    InitilizeCommunication(ip_address)
+    [tmp,ip_address] = InitilizeCommunication(ip_address)
+    SharedData["ConnectedAddress"] = ip_address
     timelast = time.time()
     while True:
         SendData(SharedData["DataToSend"])
@@ -76,7 +77,8 @@ def ListenForData(SharedData,ip_address):
             SharedData["NewDataRecieved"] = True
         # print("Data Recieved: " + str(data))
         # print("Ping: " + str(time.time()-timelast))
-        timelast = time.time()
+        SharedData["LastConnectTime"] = time.time()
+        # timelast = time.time()
 
 
 from multiprocessing import Process

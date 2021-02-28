@@ -9,6 +9,7 @@ from cv2 import *
 # from kivy.uix.label import Label
 import commands
 import globals
+import time
 
 class GUI(Widget):
     def __init__(self, **kwargs):
@@ -117,21 +118,29 @@ class GUI(Widget):
             frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             self.CameraImage1.texture = self.img2Texture(frame)
             globals.sharedData["NewDataRecieved"] = False
-        # pass
-        # s, img = self.cam.read()
-        # self.FieldImage.texture = self.img2Texture(self.fieldimg)
-        # cv2.imshow("CV2 Image", img)
-        # convert it to texture
-    def GUIUpdateText(self,command,update):
-        if(command == "connected"):
-            self.connected = update
-
+            self.connected = globals.sharedData["ConnectedAddress"]
+        ping = time.time()-globals.sharedData["LastConnectTime"]
         text = ""
-        if(self.connected[0] == True):
-            text = text + "[color=9af075]Connected: " + str(self.connected[1]) + "[/color]\n"
+        if (ping < 3):
+            text = text + "[color=#9af075]Connected: \n   " + str(self.connected[0]) + "\n   " + str(self.connected[1]) + "[/color]\n"
+            text = text + "Ping: " + ("%.2f" % (ping))
         else:
-            text = text + "[color=fa9134]Not Connected[/color]\n"
+            text = text + "[color=#fa9134]Not Connected[/color]\n"
+
         self.InfoText.text = text
+
+    # def GUIUpdateText(self,command,update):
+    #     if(command == "connected"):
+    #         self.connected = update
+    #     text = ""
+    #     if(self.connected[0] == True):
+    #         text = text + "[color=9af075]Connected: " + str(self.connected[1]) + "[/color]\n"
+    #     else:
+    #         text = text + "[color=fa9134]Not Connected[/color]\n"
+    #
+    #     text = text + "Ping: " + ("%.1f" % time.time()-globals.sharedData["LastConnectTime"])
+    #
+    #     self.InfoText.text = text
     #
     # def on_text(instance, value, secondvalue):
     #     print(secondvalue)
