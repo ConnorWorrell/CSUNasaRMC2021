@@ -17,7 +17,7 @@ def InitilizeCommunication (ip_address):
     # get the according IP address
     # ip_address = "192.168.0.100"  # socket.gethostbyname(local_hostname)
 
-    print(ip_address)
+    # print(ip_address)
     # bind the socket to the port 23456, and connect
     server_address = (ip_address, 23456)
 

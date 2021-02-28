@@ -4,6 +4,7 @@ import globals
 
 if __name__ == '__main__':
     globals.initilizeGlobals()
+    GUI.InitilizeGUI()
     # pass
     # CommunicationBase.ListenForData(None)
     # print(globals.dataToSend)
