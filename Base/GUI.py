@@ -32,7 +32,7 @@ class GUI(Widget):
         self.AboveCommandText.bind(size = self.AboveCommandText.setter('text_size')) #Actually aligns the text to left
         self.add_widget(self.AboveCommandText)
 
-        self.InfoText = Label(text = "jdfkld;\njfdklsa\njfdklsa\njfdkl;sa\nfjdk;la\njfdklsa\njfkdsl;a",halign = "left",valign = "top")
+        self.InfoText = Label(text = "",halign = "left",valign = "top", markup=True)
         self.InfoText.bind(size = self.InfoText.setter('text_size'))
         self.add_widget(self.InfoText)
 
@@ -59,7 +59,7 @@ class GUI(Widget):
     def on_window_resize(self,window,width,height):
         seperation = width*(1/80)
         fontSize = height / 20 - 15
-        InfoTextWidth = width/10
+        InfoTextWidth = width/5
 
         self.commandField.size = (width-2*seperation, height / 20)
         self.commandField.pos = (seperation, seperation)
@@ -74,7 +74,7 @@ class GUI(Widget):
         FieldHeight = height-(self.FieldImage.pos[1]+seperation)
         self.FieldImage.size = ((2/6)*FieldHeight,FieldHeight)
 
-        CameraWidth = (width-4*seperation-self.FieldImage.size[0])/2-InfoTextWidth
+        CameraWidth = (width-5*seperation-self.FieldImage.size[0]-InfoTextWidth)/2
         self.CameraImage1.size = (CameraWidth,CameraWidth*1080/1920)
         self.CameraImage1.pos = (self.FieldImage.pos[0]+self.FieldImage.size[0]+seperation,height-seperation-self.CameraImage1.size[1])
 
