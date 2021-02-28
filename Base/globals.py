@@ -15,3 +15,20 @@ def initilizeGlobals():
     sharedData["DataRecieved"] = {}
     # newDataRecieved = Value('i',0)
     sharedData["NewDataRecieved"] = False
+    sharedData["LocalPing"] = .1
+    sharedData["LastConnectTime"] = 0
+    sharedData["ConnectedAddress"] = None
+    sharedData["ConnectionStatus"] = 2  # Reconnecting
+
+def SendOther(key,command):
+    if key in sharedData["DataToSend"]:
+        tmp = sharedData["DataToSend"]
+        if key not in tmp:
+            tmp[key] = []
+        tmp[key].append(command)
+        sharedData["DataToSend"] = tmp
+    else:
+        sharedData["DataToSend"] = {key: [command]}
+
+def SendCommand(command):
+    SendOther("commands",command)

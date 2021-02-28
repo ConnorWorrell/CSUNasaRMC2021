@@ -17,7 +17,7 @@ def InitilizeCommunication (ip_address):
     # get the according IP address
     # ip_address = "192.168.0.100"  # socket.gethostbyname(local_hostname)
 
-    print(ip_address)
+    # print(ip_address)
     # bind the socket to the port 23456, and connect
     server_address = (ip_address, 23456)
 
@@ -28,7 +28,7 @@ def InitilizeCommunication (ip_address):
 import pickle
 import struct
 def SendData(DataToSend):
-    print("Sending")
+    # print("Sending")
     data = pickle.dumps(DataToSend, 0)
     size = len(data)
 
@@ -58,25 +58,49 @@ def CheckRecieveData():
     # print(CommunicationUpdate)
     # no more data -- quit the loop
     # print("no more data.")
-    print("Recieved Data")
+    # print("Recieved Data")
     return CommunicationUpdate
 
 import time
 import globals
 def ListenForData(SharedData,ip_address):
-    InitilizeCommunication(ip_address)
+    [tmp,ip_address] = InitilizeCommunication(ip_address)
+    SharedData["ConnectedAddress"] = ip_address
     timelast = time.time()
     while True:
-        SendData(SharedData["DataToSend"])
-        SharedData["DataToSend"] = {}
-        time.sleep(0.5)
-        data = CheckRecieveData()
-        if data != {}:
-            SharedData["DataRecieved"] = data
-            SharedData["NewDataRecieved"] = True
-        print("Data Recieved: " + str(data))
-        print("Ping: " + str(time.time()-timelast))
-        timelast = time.time()
+        try:
+            SendData(SharedData["DataToSend"])
+            SharedData["DataToSend"] = {}
+            time.sleep(SharedData["LocalPing"])
+            data = CheckRecieveData()
+            if data != {}:
+                SharedData["DataRecieved"] = data
+                SharedData["NewDataRecieved"] = True
+            # print("Data Recieved: " + str(data))
+            # print("Ping: " + str(time.time()-timelast))
+            SharedData["LastConnectTime"] = time.time()
+            SharedData["ConnectionStatus"] = 0 # Connected
+            # timelast = time.time()
+        except:
+            print("connection closed")
+            reconnectionAttempts = 5
+            Attempts = 0
+            for i in range (reconnectionAttempts):
+                SharedData["ConnectionStatus"] = 1 # Reconnecting
+                Attempts = Attempts + 1
+                try:
+                    print("Attempting Reconnect: " + str(i+1))
+                    sock.close()
+                    [tmp, ip_address] = InitilizeCommunication("0")
+                    SharedData["ConnectedAddress"] = ip_address
+                    timelast = time.time()
+                    break
+                except Exception:
+                    pass
+            if(Attempts == reconnectionAttempts):
+                SharedData["ConnectionStatus"] = 2  # Disconnected
+                print("Failed to reconnect, ending connection task")
+                break
 
 
 from multiprocessing import Process
