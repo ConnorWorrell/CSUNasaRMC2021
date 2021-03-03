@@ -86,8 +86,6 @@ if __name__ == '__main__':
             # print(globals.sharedData["DataRecieved"]["commands"])
             commands.ParseCommands()
 
-            time.sleep(.2)
-
 # CommunicationRobot.SendData((1,2,3,4,5,6,7,8,9,101,12))
 # StateMachine = SM1()
 

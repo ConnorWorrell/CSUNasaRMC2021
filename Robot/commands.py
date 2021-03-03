@@ -6,8 +6,8 @@ def ParseCommands():
         for key in data["DataRecieved"]:
             for comm in data["DataRecieved"][key]:
                 CommandEval(key,comm)
-    data["NewDataRecieved"] = False
-    globals.sharedData["DataRecieved"] = {}
+        data["NewDataRecieved"] = False
+        globals.sharedData["DataRecieved"] = {}
 
 def CommandEval(key,comm):
     print("Parse: " + key + " " + str(" ".join(comm)))
