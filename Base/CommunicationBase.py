@@ -63,23 +63,32 @@ def CheckRecieveData():
 
 import time
 import globals
-def ListenForData(SharedData,ip_address):
+def ListenForData(SharedData,lock,ip_address):
     [tmp,ip_address] = InitilizeCommunication(ip_address)
     SharedData["ConnectedAddress"] = ip_address
     timelast = time.time()
     while True:
         try:
-            SendData(SharedData["DataToSend"])
+            print("Sending",SharedData["DataToSend"])
+            lock.acquire()
+            dataToSend = SharedData["DataToSend"]
             SharedData["DataToSend"] = {}
+            lock.release()
+            SendData(dataToSend)
+
             time.sleep(SharedData["LocalPing"])
             data = CheckRecieveData()
             if data != {}:
+                lock.acquire()
                 SharedData["DataRecieved"] = data
                 SharedData["NewDataRecieved"] = True
+                lock.release()
             # print("Data Recieved: " + str(data))
             # print("Ping: " + str(time.time()-timelast))
+            lock.acquire()
             SharedData["LastConnectTime"] = time.time()
             SharedData["ConnectionStatus"] = 0 # Connected
+            lock.release()
             # timelast = time.time()
         except:
             print("connection closed")
@@ -107,5 +116,5 @@ from multiprocessing import Process
 import globals
 def StartProcess(ip_address):
     print(ip_address)
-    p = Process(target=ListenForData, args=(globals.sharedData,ip_address))
+    p = Process(target=ListenForData, args=(globals.sharedData,globals.ThreadLocker,ip_address))
     p.start()

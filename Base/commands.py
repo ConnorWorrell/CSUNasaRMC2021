@@ -1,6 +1,7 @@
 import CommunicationBase
 import GUI
 import globals
+import Joystick
 
 def parse(command):
     commands = command.split(" ")
@@ -14,6 +15,11 @@ def parse(command):
     elif(commands[0].lower() == "ping"):
         globals.sharedData["LocalPing"] = float(commands[1])
         globals.SendCommand(commands)
+    elif(commands[0].lower() == "joystick"):
+        if(commands[1].lower() == "on"):
+            Joystick.StartJoystickProcess()
+        elif(commands[1].lower() == "off"):
+            Joystick.StopJoystickProcess()
     else:
         globals.SendCommand(commands)
         # if "commands" in globals.sharedData["DataToSend"]:

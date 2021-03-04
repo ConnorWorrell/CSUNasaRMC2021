@@ -1,4 +1,4 @@
-from multiprocessing import Manager
+from multiprocessing import Manager, Lock
 
 def initilizeGlobals():
     manager = Manager()
@@ -19,6 +19,10 @@ def initilizeGlobals():
     sharedData["LastConnectTime"] = 0
     sharedData["ConnectedAddress"] = None
     sharedData["ConnectionStatus"] = 2  # Reconnecting
+    sharedData["JoystickOn"] = False
+
+    global ThreadLocker
+    ThreadLocker = Lock()
 
 def SendOther(key,command):
     if key in sharedData["DataToSend"]:
