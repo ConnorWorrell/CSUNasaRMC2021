@@ -89,6 +89,13 @@ class Cameras:
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, ResWidth)
         cam.set(cv2.CAP_PROP_FRAME_HEIGHT,ResHeight)
 
+        try:
+            s, img = cam.read()
+            cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        except:
+            print("unable to mount camera")
+            return
+
         NewCamera = CameraInfo()
         NewCamera.SetCamera(cam,ResWidth,ResHeight,RelXPosition,RelYPosition,RelRotation,RefDist,RefHeight,FOV)
 

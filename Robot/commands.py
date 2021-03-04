@@ -21,4 +21,5 @@ def CommandEval(key,comm):
         globals.motors.wheel(3, .0)
 
 def StopEverything():
-    print("Timedout, Stopping Everything")
+    # print("Timedout, Stopping Everything")
+    pass
