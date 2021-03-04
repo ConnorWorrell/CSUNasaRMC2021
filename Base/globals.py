@@ -19,6 +19,7 @@ def initilizeGlobals():
     sharedData["LastConnectTime"] = 0
     sharedData["ConnectedAddress"] = None
     sharedData["ConnectionStatus"] = 2  # Reconnecting
+    sharedData["JoystickOn"] = False
 
     global ThreadLocker
     ThreadLocker = Lock()
