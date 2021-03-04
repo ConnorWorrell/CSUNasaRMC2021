@@ -1,10 +1,10 @@
 from inputs import get_gamepad
 import globals
 from multiprocessing import Process
-import time
 
+# Joystick handels updating the joystick values
 class Joystick:
-    def __init__(self):
+    def __init__(self): # Assume all buttons and joysticks start unpressed or centered
         self.ABS_X = 0
         self.ABS_Y = 0
         self.ABS_RX = 0
@@ -23,8 +23,11 @@ class Joystick:
         self.BTN_TL = 0
         self.BTN_THUMBR = 0
         self.BTN_THUMBL = 0
-        
+
+    # This waits for something in the joystick to change, and when it does, it updates the class variables
+    # It returns the new joystick
     def CheckForChanges(self):
+        # Remove Sync events, these don't seem to be useful, they are just duplicates of the Absolute or Key events
         prunedEvents = []
         while prunedEvents == []:
             events = get_gamepad()
@@ -32,8 +35,8 @@ class Joystick:
                 if event.ev_type != "Sync":
                     prunedEvents.append(event)
 
+        # Update variables
         for event in prunedEvents:
-            # print(event.ev_type, event.code, event.state)
             if (event.ev_type == "Absolute" or event.ev_type == "Key"):
                 if (event.code == "ABS_X"):
                     self.ABS_X = event.state
@@ -75,6 +78,7 @@ class Joystick:
         return([self.ABS_X, self.ABS_Y, self.ABS_RX, self.ABS_RY, self.BTN_NORTH, self.BTN_SOUTH, self.BTN_EAST, self.BTN_WEST, self.ABS_HAT0X, self.ABS_HAT0Y,
                   self.BTN_SELECT, self.BTN_START, self.ABS_RZ, self.ABS_Z, self.BTN_TL, self.BTN_TR, self.BTN_THUMBR, self.BTN_THUMBL])
 
+# Start a process that handels the joystick
 def StartJoystick(sharedData,lock):
     lock.acquire()
     sharedData["JoystickOn"] = True
@@ -82,12 +86,12 @@ def StartJoystick(sharedData,lock):
 
     joy = Joystick()
     while (sharedData["JoystickOn"] == True):
-        Changes = joy.CheckForChanges()
-        if sharedData["JoystickOn"] == False:
+        Changes = joy.CheckForChanges() # Wait for changes
+        if sharedData["JoystickOn"] == False: # Check if joystick off command recieved
             break
 
+        # Send changes to the robot
         if Changes is not False:
-            print(Changes)
             lock.acquire()
             tmp = sharedData["DataToSend"]
             if "Joystick" not in tmp.keys():
@@ -95,18 +99,19 @@ def StartJoystick(sharedData,lock):
             tmp["Joystick"].append(Changes)
             sharedData["DataToSend"] = tmp
             lock.release()
-        print(sharedData["DataToSend"])
 
+# This is the command that is called by the GUI to start the joystick process
 def StartJoystickProcess():
     global joyProcess
     joyProcess = Process(target=StartJoystick, args=(globals.sharedData,globals.ThreadLocker))
     joyProcess.start()
 
+# Function called by the gui to stop the joystick process
 def StopJoystickProcess():
     sharedData = globals.sharedData
     lock = globals.ThreadLocker
     lock.acquire()
-    sharedData["JoystickOn"] = False
+    sharedData["JoystickOn"] = False # This flag is checked duirng the joystick process
     lock.release()
 
 if __name__ == '__main__':

@@ -2,18 +2,10 @@ from multiprocessing import Manager, Lock
 
 def initilizeGlobals():
     manager = Manager()
-    # global dataToSend
-    # global readyToSend
-    # global dataRecieved
-    # global newDataRecieved
     global sharedData
-    # dataToSend = manager.dict()
     sharedData = manager.dict()
     sharedData["DataToSend"] = {}
-    # readyToSend = False
-    # dataRecieved = manager.dict()
     sharedData["DataRecieved"] = {}
-    # newDataRecieved = Value('i',0)
     sharedData["NewDataRecieved"] = False
     sharedData["LocalPing"] = .1
     sharedData["LastConnectTime"] = 0
@@ -24,6 +16,8 @@ def initilizeGlobals():
     global ThreadLocker
     ThreadLocker = Lock()
 
+# TODO this is communication stuff, so it should really be in the communicationbase.py
+# Add a key and command to be sent to the robot
 def SendOther(key,command):
     if key in sharedData["DataToSend"]:
         tmp = sharedData["DataToSend"]
@@ -34,5 +28,6 @@ def SendOther(key,command):
     else:
         sharedData["DataToSend"] = {key: [command]}
 
+# Send a command with the key "command"
 def SendCommand(command):
     SendOther("commands",command)
