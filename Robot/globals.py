@@ -3,18 +3,12 @@ from multiprocessing import Manager,Lock
 
 def initilizeGlobals():
     manager = Manager()
-    # global dataToSend
-    # global readyToSend
-    # global dataRecieved
-    # global newDataRecieved
+
+    # Data shared between communication process and main process
     global sharedData
-    # dataToSend = manager.dict()
     sharedData = manager.dict()
     sharedData["DataToSend"] = {"CameraFrames":[]}
-    # readyToSend = False
-    # dataRecieved = manager.dict()
     sharedData["DataRecieved"] = {"commands":[]}
-    # newDataRecieved = Value('i',0)
     sharedData["NewDataRecieved"] = False
     sharedData["Ping"] = .1
     sharedData["LastConnectTime"] = 0
