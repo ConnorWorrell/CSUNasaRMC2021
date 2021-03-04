@@ -59,11 +59,12 @@ if __name__ == '__main__':
 
     globals.initilizeGlobals()
     sharedData = globals.sharedData
+    lock = globals.ThreadLock
     # CommunicationRobot.InitilizeCommunication()
     # print(CommunicationRobot.CheckRecieveData())
     # CommunicationRobot.SendData((1,2,3,4,5,6,7,8,9,10,1111))
     print(sharedData)
-    p = Process(target = CommunicationRobot.StartCommunication, args = (sharedData,))
+    p = Process(target = CommunicationRobot.StartCommunication, args = (sharedData,lock,))
     p.start()
     import random
     import time

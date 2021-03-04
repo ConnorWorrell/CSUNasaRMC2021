@@ -77,7 +77,7 @@ def SendData(DataToSend):
 
 import time
 # import globals
-def StartCommunication(sharedData):
+def StartCommunication(sharedData,lock):
     InitilizeCommunication()
     timelast = time.time()
     while True:
@@ -87,6 +87,7 @@ def StartCommunication(sharedData):
             data = CheckRecieveData()
             for key in data.keys():
             # if "commands" in data:
+                lock.acquire()
                 tmp = sharedData["DataRecieved"]
                 if key not in tmp:
                     tmp[key] = []
@@ -94,16 +95,23 @@ def StartCommunication(sharedData):
                 sharedData["DataRecieved"] = tmp#{"commands":tmp + data["commands"]}
                 # sharedData["DataRecieved"] = data
                 sharedData["NewDataRecieved"] = True
+                lock.release()
             # print("Data Recieved")
             # print(sharedData["DataRecieved"])
             time.sleep(sharedData["Ping"])
-            SendData(sharedData["DataToSend"])
+            dataToSend = sharedData["DataToSend"]
+            lock.acquire()
             sharedData["DataToSend"] = {}
+            lock.release()
+            SendData(dataToSend)
+
             # print("ping: " + str(time.time()-timelast))
+            lock.acquire()
             sharedData["LastConnectTime"] = time.time()
+            lock.release()
             timelast=time.time()
-        except:
-            print("connection closed")
+        except Exception as e:
+            print("connection closed",e)
             timelast = 0
             InitilizeCommunication()
 

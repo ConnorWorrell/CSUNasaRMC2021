@@ -1,13 +1,17 @@
 import globals
 
 def ParseCommands():
-    data = globals.sharedData
+    lock = globals.ThreadLock
+    lock.acquire()
+    data = globals.sharedData.copy()
+    if data["NewDataRecieved"] == True:
+        globals.sharedData["NewDataRecieved"] = False
+        globals.sharedData["DataRecieved"] = {}
+    lock.release()
     if data["NewDataRecieved"] == True:
         for key in data["DataRecieved"]:
             for comm in data["DataRecieved"][key]:
                 CommandEval(key,comm)
-        data["NewDataRecieved"] = False
-        globals.sharedData["DataRecieved"] = {}
 
 def CommandEval(key,comm):
     print("Parse: " + key + " " + str(" ".join(comm)))

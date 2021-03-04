@@ -1,4 +1,4 @@
-from multiprocessing import Manager
+from multiprocessing import Manager,Lock
 
 
 def initilizeGlobals():
@@ -22,3 +22,6 @@ def initilizeGlobals():
     import motor
     global motors
     motors = motor.motors()
+
+    global ThreadLock
+    ThreadLock = Lock()
