@@ -14,7 +14,8 @@ def ParseCommands():
                 CommandEval(key,comm)
 
 def CommandEval(key,comm):
-    print("Parse: " + key + " " + str(" ".join(comm)))
+    # print(key,comm)
+    print("Parse: " + key + " " + str(comm))
     if(comm[0] == "ping"):
         globals.sharedData["Ping"] = float(comm[1])
     elif(comm[0] == "motor"):
