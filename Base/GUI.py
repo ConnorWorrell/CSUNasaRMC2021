@@ -114,11 +114,14 @@ def InitilizeGUI():
         def Update_Screen(self,x):
             import numpy as np
             # self.InfoText.text = str(globals.sharedData["DataRecieved"])
-            if(globals.sharedData["NewDataRecieved"] == True):
+            globals.ThreadLocker.acquire()
+            NewData = globals.sharedData.copy()
+            globals.ThreadLocker.release()
+            if(NewData["NewDataRecieved"] == True):
                 # frame =globals.sharedData["DataRecieved"]['CameraFrames'][0]
                 # print(globals.sharedData["DataRecieved"]['CameraFrames'][0])
                 Frames = []
-                for frame in globals.sharedData["DataRecieved"]["CameraFrames"]:
+                for frame in NewData["DataRecieved"]["CameraFrames"]:
                     nparr = np.frombuffer(frame, np.uint8)
                     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     Frames.append(frame)
@@ -132,14 +135,14 @@ def InitilizeGUI():
                 if (len(Frames) >= 4):
                     self.CameraImage4.texture = self.img2Texture(Frames[3])
 
-                globals.sharedData["NewDataRecieved"] = False
-                self.connected = globals.sharedData["ConnectedAddress"]
-            ping = time.time()-globals.sharedData["LastConnectTime"]
+                NewData["NewDataRecieved"] = False
+                self.connected = NewData["ConnectedAddress"]
+            ping = time.time()-NewData["LastConnectTime"]
             text = ""
-            if (ping < 3 and globals.sharedData["ConnectionStatus"] == 0):
+            if (ping < 3 and NewData["ConnectionStatus"] == 0):
                 text = text + "[color=#9af075]Connected: \n   " + str(self.connected[0]) + "\n   " + str(self.connected[1]) + "[/color]\n"
                 text = text + "Ping: " + ("%.2f" % (ping))
-            elif (globals.sharedData["ConnectionStatus"] == 1):
+            elif (NewData["ConnectionStatus"] == 1):
                 text = text + "[color=#e6ed21]Reconnecting... \n   " + str(self.connected[0]) + "\n   " + str(
                     self.connected[1]) + "[/color]\n"
                 text = text + "Ping: " + ("%.2f" % (ping))
