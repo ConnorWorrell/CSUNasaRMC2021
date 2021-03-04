@@ -139,7 +139,7 @@ def InitilizeGUI():
                 self.connected = NewData["ConnectedAddress"]
             ping = time.time()-NewData["LastConnectTime"]
             text = ""
-            if (ping < 3 and NewData["ConnectionStatus"] == 0):
+            if (ping < 3*(NewData["LocalPing"]+.1) and NewData["ConnectionStatus"] == 0):
                 text = text + "[color=#9af075]Connected: \n   " + str(self.connected[0]) + "\n   " + str(self.connected[1]) + "[/color]\n"
                 text = text + "Ping: " + ("%.2f" % (ping))
             elif (NewData["ConnectionStatus"] == 1):
