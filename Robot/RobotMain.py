@@ -55,7 +55,6 @@ if __name__ == '__main__':
     # Cameras.AddCamera(640,480,.25,0,90,1,500,120)
     Cameras.AddCamera(1920, 1080, 0, 0, 0, 1, 500, 120)
     Cameras.AddCamera(1920, 1080, 0, 0, 0, 1, 500, 120)
-    print(Cameras.CameraStorage)
 
     globals.initilizeGlobals()
     sharedData = globals.sharedData
