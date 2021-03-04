@@ -18,3 +18,7 @@ def initilizeGlobals():
     sharedData["NewDataRecieved"] = False
     sharedData["Ping"] = .1
     sharedData["LastConnectTime"] = 0
+
+    import motor
+    global motors
+    motors = motor.motors()
