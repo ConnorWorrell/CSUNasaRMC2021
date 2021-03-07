@@ -4,6 +4,7 @@ import statistics
 import math
 from pyzbar.pyzbar import decode,ZBarSymbol
 
+# Class that stores the info for the camera
 class CameraInfo:
     def __init__(self):
         self.cam = None
@@ -43,9 +44,10 @@ class Cameras:
         }
         self.TopLeftCriteria = "ABCDEFGH"
         self.RobotLocationInfo = [0,0,0] #X_pos,Y_pos,Rotation
-        self.SmoothingFactor = 5
-        self.LastFrames = []
+        self.SmoothingFactor = 5 # smooths robot position, removes jitter
+        self.LastFrames = [] # Stores previous frames so they can be grabbed later
 
+    # Resizes the image without changing aspect ratio
     def image_resize(self,image, width = None, height = None, inter = cv2.INTER_AREA):
         # initialize the dimensions of the image to be resized and
         # grab the image size
@@ -102,6 +104,7 @@ class Cameras:
         self.CameraStorage.append(NewCamera)
         self.LastFrames.append(None)
 
+    # Finds the info needed to extract position from an image
     def FindCorners(self,img):
         import math
         font_face = cv2.FONT_HERSHEY_SIMPLEX
@@ -195,10 +198,6 @@ class Cameras:
             for Point in QrCodeImportantPoints:
                 try:
                     Point[0].tolist()
-                        # logging.error(
-                        #     "Error, Duplicate points in QrCodeImportantPoints, QrCodeImportantPoints = {} pts = {}".format(
-                        #         QrCodeImportantPoints, pts))
-                        # return None, None, None, None, None, img
                 except:
                     print(Point)
                     print(Point[0])
@@ -227,9 +226,6 @@ class Cameras:
             print(xdiff, ydiff)
             div = det(xdiff, ydiff)
             if div == 0:  # Handle the case where the lines are parrell
-                # logging.warning(
-                #     "Error in Find Corners Vanishing Point Calculation, lines never cross, xdiff = {} ydiff = {} QrCodeImportantPoints = {}".format(
-                #         xdiff, ydiff, QrCodeImportantPoints))
                 VanishingPoint = [100000000000, statistics.mean(ydiff) * 100000000000 / statistics.mean(xdiff)]
             else:
                 d = (det(*[QrCodeImportantPoints[0][0], QrCodeImportantPoints[1][0]]),
@@ -250,9 +246,6 @@ class Cameras:
 
             # issue caused when a point is not selected
             if (BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-                # logging.error(
-                #     "Error in Find Corners edge calculation 1, BV * BC_prime - AV * AC_prime == 0, BV = {} BC_prime = {} AV = {} AC_prime = {} A = {} B = {} VanishingPoint = {}".format(
-                #         BV, BC_prime, AV, AC_prime, A, B, VanishingPoint))
                 return (None, None, None, None, None, img)
             BC = -(AB * BV * (BC_prime)) / (BV * (BC_prime) - AV * (AC_prime))
 
@@ -279,9 +272,6 @@ class Cameras:
             AC_prime = abs(QrCodeImportantPointsLocationRealHorizontal[2] - ScanLeftSideEstimateReal)
 
             if (BV * BC_prime - AV * AC_prime == 0):  # Need to handle this case better in the future, im not sure what causes this but it happens every so often, so maby its random
-                # logging.error(
-                #     "Error in Find Corners edge calculation 2, BV * BC_prime - AV * AC_prime == 0, BV = {} BC_prime = {} AV = {} AC_prime = {} A = {} B = {} VanishingPoint = {}".format(
-                #         BV, BC_prime, AV, AC_prime, A, B, VanishingPoint))
                 return (None, None, None, None, None, img)
             BC = -(AB * BV * BC_prime) / (BV * BC_prime - AV * AC_prime)
 
@@ -305,21 +295,13 @@ class Cameras:
 
         return (None, None, None, None, None, img)
 
+    # Calculates the position of the robot
     def GetDistance(self,Corners, WidthOfScannedSection, HeightOfScannedSection, LeftPositionOfScannedSection, VanishingPt,
                     X_Res, RefRenceDistance, RefrenceHeight, h_fov):
-        # global X_Res
-        # try:
-        #     X_Res = img.shape[1]
-        # except:
-        #     pass
         a = WidthOfScannedSection  # Board Width in meters
         HeightMeasuredRightC = math.dist(Corners[2], Corners[
             1]) * .5 / HeightOfScannedSection  # Vertical height of edge of board in pix
         HeightMeasuredLeftB = math.dist(Corners[0], Corners[3]) * .5 / HeightOfScannedSection
-
-        # if (Calibrating):
-            # logging.info("Calibration Height: Left = {}, Right = {}".format(HeightMeasuredLeftB, HeightMeasuredRightC))
-            # print("Calibration Height: Left = {}, Right = {}".format(HeightMeasuredLeftB, HeightMeasuredRightC))
 
         c = RefRenceDistance * RefrenceHeight / HeightMeasuredRightC  # Distance from right side of board to camera
         b = RefRenceDistance * RefrenceHeight / HeightMeasuredLeftB  # Distance from left side of board to camera
@@ -329,9 +311,6 @@ class Cameras:
                         -2 * a * b))  # Angle between board face and direction to camera, see notes for more info
         except:
             print("ThetaB1 Calculation Failure: " + str((c ** 2 - a ** 2 - b ** 2) / (-2 * a * b)))
-            # logging.error(
-            #     "Failure Calculating ThetaB1, a,b,c cannot form a triangle " + "a = {} b = {} c = {} Corners = {}".format(
-            #         a, b, c, Corners))
             return None, None, None
 
         y_rel = math.sin(ThetaB1) * b  # Distance from left side of board to camera location
@@ -366,22 +345,22 @@ class Cameras:
 
         CenterOfBarcodePoint = [int(-BC * np.dot((B - A), (1, 0)) / (AB) + B[0]),
                                 int(-BC * np.dot((B - A), (0, 1)) / (AB) + B[
-                                    1])]  # int(BC*np.dot((B-A),(0,1))/(AB)+B[1])]
+                                    1])]
 
         # Calculate deviation of center of qr code from the center of the camera's view
         b = (-CenterOfBarcodePoint[0] + X_Res / 2) * h_fov / X_Res
 
-        # cv2.circle(img, tuple(CenterOfBarcodePoint), 5, (125, 255, 255), 5)
-
         rotation = a + b
         return x_abs, y_abs, rotation
 
+    # Takes photos without checking for qr code or calculating position
     def UpdateFrameData(self):
         for CameraIndex in range(len(self.CameraStorage)):
             Camera = self.CameraStorage[CameraIndex]
             s, img = Camera.cam.read()
             self.LastFrames[CameraIndex] = img
 
+    # Takes photos and calculates position if qr code is detected
     def AnalizeCameras(self):
         X = []
         Y = []
@@ -405,8 +384,8 @@ class Cameras:
                 self.RobotLocationInfo = [statistics.mean(X)/self.SmoothingFactor+SmoothingFactor2*self.RobotLocationInfo[0]/self.SmoothingFactor,
                                           statistics.mean(Y)/self.SmoothingFactor+SmoothingFactor2*self.RobotLocationInfo[1]/self.SmoothingFactor,
                                           statistics.mean(Rot)/self.SmoothingFactor+SmoothingFactor2*self.RobotLocationInfo[2]/self.SmoothingFactor]
-        # cv2.waitKey(1)
 
+    # Displays a cv2 window with a visual representation of the robot position inside of it
     def displayPosition(self):
         RobotHeight = 1/2
         RobotWidth = .5/2
@@ -445,5 +424,4 @@ class Cameras:
                                                         int(CamYPos - math.cos(math.radians(angle+Camera.RelRotation)) * angleDist)),
                      (255, 255, 255))
         cv2.imshow("PositionImage", PosImg)
-        # self.RobotLocationInfo[2]=self.RobotLocationInfo[2]+1
         cv2.waitKey(1)

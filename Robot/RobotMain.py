@@ -1,24 +1,16 @@
-# Cameras.AnalizeCameras()
-# while(1):
-#     Cameras.AnalizeCameras()
-#     # print(Cameras.RobotLocationInfo)
-#     Cameras.displayPosition()
-# Initilize other cameras and sensors here
 
-# ListenForData()
-
-
-
+# Main robot program
 if __name__ == '__main__':
     from Cameras import Cameras as Cam1
     import CommunicationRobot
     from multiprocessing import Process
-    from StateMachine import StateMachine as SM1
     import globals
     from cv2 import *
     import commands
+    import time
 
-
+    # resize image but maintain aspect ratio
+    # TODO move this into cameras
     def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
         # initialize the dimensions of the image to be resized and
         # grab the image size
@@ -59,33 +51,25 @@ if __name__ == '__main__':
     globals.initilizeGlobals()
     sharedData = globals.sharedData
     lock = globals.ThreadLock
-    # CommunicationRobot.InitilizeCommunication()
-    # print(CommunicationRobot.CheckRecieveData())
-    # CommunicationRobot.SendData((1,2,3,4,5,6,7,8,9,10,1111))
-    print(sharedData)
+
+    # Start communication process
     p = Process(target = CommunicationRobot.StartCommunication, args = (sharedData,lock,))
     p.start()
-    import random
-    import time
+
     while True:
+        # Calculate ping and determine if we need to stop the robot for safety reasons
         ping = time.time() - sharedData["LastConnectTime"]
-        if(ping > 5):
+        if(ping > 5): # timed out TODO change to based on expected ping
             commands.StopEverything()
             time.sleep(1)
-        else:
-            # print("updates")
-            # print(sharedData)
-            # Cameras.UpdateFrameData()
+        else: # ping is good
+            # Take photos, and to que to be sent to base todo move this to cameras
             Cameras.AnalizeCameras()
             Encoded = []
             for i in Cameras.LastFrames:
-                # print(cv2.imencode(".jpg",i,[int(cv2.IMWRITE_JPEG_QUALITY),90]))
                 img_r = image_resize(i,200,200)
                 Encoded.append(cv2.imencode(".jpg",img_r,[int(cv2.IMWRITE_JPEG_QUALITY),90])[1].tobytes())
             sharedData["DataToSend"] = {"CameraFrames" : Encoded}
-            # print(globals.sharedData["DataRecieved"]["commands"])
+
+            # check for commands from base
             commands.ParseCommands()
-
-# CommunicationRobot.SendData((1,2,3,4,5,6,7,8,9,101,12))
-# StateMachine = SM1()
-

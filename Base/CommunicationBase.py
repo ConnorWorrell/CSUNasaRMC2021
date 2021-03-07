@@ -1,5 +1,11 @@
 import socket
+import pickle
+import struct
+import time
+from multiprocessing import Process
+import globals
 
+# Start communication as client
 def InitilizeCommunication (ip_address):
     if(ip_address == None or ip_address == "0"):
         ip_address = "192.168.0.100"
@@ -14,10 +20,6 @@ def InitilizeCommunication (ip_address):
     # get fully qualified hostname
     local_fqdn = socket.getfqdn()
 
-    # get the according IP address
-    # ip_address = "192.168.0.100"  # socket.gethostbyname(local_hostname)
-
-    # print(ip_address)
     # bind the socket to the port 23456, and connect
     server_address = (ip_address, 23456)
 
@@ -25,72 +27,63 @@ def InitilizeCommunication (ip_address):
     print("connecting to %s (%s) with %s" % (local_hostname, local_fqdn, ip_address))
     return [True,server_address]
 
-import pickle
-import struct
+# Sends data to robot in the form of [length of data, data1, data2, ..., data end]
 def SendData(DataToSend):
-    # print("Sending")
-    data = pickle.dumps(DataToSend, 0)
+    data = pickle.dumps(DataToSend, 0) # pickle changes structures into bytes
     size = len(data)
 
     global sock
     sock.sendall(struct.pack(">L", size) + data)
 
-payload_size = struct.calcsize(">L")
+payload_size = struct.calcsize(">L") # Predetermined payload size, contains the number of bytes in the payload
+
+# Stalls the process until data is recieved
 def CheckRecieveData():
-    data = b""
+    data = b"" # empty bytes array
     global sock
-    while len(data) < payload_size:
+    while len(data) < payload_size: # recieve payload size + beginning of message
         data += sock.recv(4096)
-        # print(data)
-    # if data != previousdata:
     packed_msg_size = data[:payload_size]
     data = data[payload_size:]
     msg_size = struct.unpack(">L", packed_msg_size)[0]
 
-    while len(data) < msg_size:
+    while len(data) < msg_size: # recieve the rest of the message
         data += sock.recv(4096)
-    CommunicationData = data[:msg_size]
-    # data = data[msg_size:]
+    CommunicationData = data[:msg_size] # remove payload size from the bytes array
 
+    # Reconstruct the strucutres using pickle
     CommunicationUpdate = pickle.loads(CommunicationData, fix_imports=True, encoding="bytes")
 
-    # output received data
-    # print(CommunicationUpdate)
-    # no more data -- quit the loop
-    # print("no more data.")
-    # print("Recieved Data")
     return CommunicationUpdate
 
-import time
-import globals
+# Listens for data and sends back responce
+# The main funciton executed to handel the communication between robot and base
 def ListenForData(SharedData,lock,ip_address):
     [tmp,ip_address] = InitilizeCommunication(ip_address)
     SharedData["ConnectedAddress"] = ip_address
-    timelast = time.time()
-    while True:
-        try:
-            print("Sending",SharedData["DataToSend"])
-            lock.acquire()
-            dataToSend = SharedData["DataToSend"]
-            SharedData["DataToSend"] = {}
-            lock.release()
-            SendData(dataToSend)
 
-            time.sleep(SharedData["LocalPing"])
-            data = CheckRecieveData()
-            if data != {}:
+    while True:
+        try: # Catches socket closes
+            lock.acquire() # Lock thread during edits
+            dataToSend = SharedData["DataToSend"] # duplicate data and finish edits
+            SharedData["DataToSend"] = {}
+            lock.release() # Unlock thread, edit complete
+            SendData(dataToSend) # Send duplicated data
+
+            time.sleep(SharedData["LocalPing"]) # Wait for ping time
+            data = CheckRecieveData() # Stall until data is recieved
+            if data != {}: # If we recieved some data, not just a ping: {}
                 lock.acquire()
                 SharedData["DataRecieved"] = data
                 SharedData["NewDataRecieved"] = True
                 lock.release()
-            # print("Data Recieved: " + str(data))
-            # print("Ping: " + str(time.time()-timelast))
-            lock.acquire()
+
+            lock.acquire() # This is used to calculate ping time for the GUI
             SharedData["LastConnectTime"] = time.time()
-            SharedData["ConnectionStatus"] = 0 # Connected
+            SharedData["ConnectionStatus"] = 0
             lock.release()
-            # timelast = time.time()
-        except:
+
+        except: # If the connection is closed somehow
             print("connection closed")
             reconnectionAttempts = 5
             Attempts = 0
@@ -100,20 +93,17 @@ def ListenForData(SharedData,lock,ip_address):
                 try:
                     print("Attempting Reconnect: " + str(i+1))
                     sock.close()
-                    [tmp, ip_address] = InitilizeCommunication("0")
+                    [tmp, ip_address] = InitilizeCommunication("0") # TODO reconnection only works if server ip is 192.168.0.100
                     SharedData["ConnectedAddress"] = ip_address
-                    timelast = time.time()
                     break
-                except Exception:
+                except Exception: # Unable to reconnect
                     pass
             if(Attempts == reconnectionAttempts):
                 SharedData["ConnectionStatus"] = 2  # Disconnected
                 print("Failed to reconnect, ending connection task")
                 break
 
-
-from multiprocessing import Process
-import globals
+# Function called from GUI to start the communication process
 def StartProcess(ip_address):
     print(ip_address)
     p = Process(target=ListenForData, args=(globals.sharedData,globals.ThreadLocker,ip_address))
