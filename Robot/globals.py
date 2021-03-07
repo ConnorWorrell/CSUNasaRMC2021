@@ -13,9 +13,16 @@ def initilizeGlobals():
     sharedData["Ping"] = .1
     sharedData["LastConnectTime"] = 0
 
-    import motor
-    global motors
-    motors = motor.motors()
+    global sharedMotorSpeedData
+    sharedMotorSpeedData = manager.dict()
+    sharedMotorSpeedData["RRSpeed"] = 0
+    sharedMotorSpeedData["RLSpeed"] = 0
+    sharedMotorSpeedData["FRSpeed"] = 0
+    sharedMotorSpeedData["FLSpeed"] = 0
+
+    # import motor
+    # global motors
+    # motors = motor.motors()
 
     global ThreadLock
     ThreadLock = Lock()

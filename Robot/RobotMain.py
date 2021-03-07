@@ -8,6 +8,7 @@ if __name__ == '__main__':
     from cv2 import *
     import commands
     import time
+    import motor
 
     # resize image but maintain aspect ratio
     # TODO move this into cameras
@@ -56,7 +57,12 @@ if __name__ == '__main__':
     p = Process(target = CommunicationRobot.StartCommunication, args = (sharedData,lock,))
     p.start()
 
+    motorSpeedData = globals.sharedMotorSpeedData
+    motorProcess = p = Process(target = motor.motorSpeedControl, args = (motorSpeedData,lock,))
+    motorProcess.start()
+
     while True:
+        # globals.sharedMotorSpeedData = {"RRSpeed": 0.0, "RLSpeed": 0.0}
         # Calculate ping and determine if we need to stop the robot for safety reasons
         ping = time.time() - sharedData["LastConnectTime"]
         if(ping > 5): # timed out TODO change to based on expected ping

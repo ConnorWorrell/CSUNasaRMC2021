@@ -30,13 +30,15 @@ def map_syren(speed):
         speed = int(speed)
         return speed
 
-def motorSpeedControl(sharedMotorSpeedData):
+def motorSpeedControl(sharedMotorSpeedData,lock):
     class motors:
         def __init__(self):
             self.status = "Initializing"
             logging.info("Initializing motor drivers")
             self.RRSpeed = 0
             self.RLSpeed = 0
+            self.FRSpeed = 0
+            self.FLSpeed = 0
             # Arduinos must be flashed with Standard Firmata
             try:
                 self.ard0 = PyMata3(arduino_wait=2, com_port='COM6')  # Lattepanda onboard arduino
@@ -135,6 +137,8 @@ def motorSpeedControl(sharedMotorSpeedData):
             logging.info("Stopping motors")
             self.SetMotorRR(0)
             self.SetMotorRL(0)
+            self.SetMotorFR(0)
+            self.SetMotorFL(0)
             return self.status
 
         # Map L,R tank drive to wheel number
@@ -162,17 +166,28 @@ def motorSpeedControl(sharedMotorSpeedData):
         def updateMotors(self):
             motors.SetMotorRR(self.RRSpeed)
             motors.SetMotorRL(self.RLSpeed)
+            motors.SetMotorFR(self.FRSpeed)
+            motors.SetMotorFL(self.FLSpeed)
 
     motors = motors()
     while (1):
+        lock.acquire()
         if "RRSpeed" in sharedMotorSpeedData.keys():
             motors.RRSpeed = sharedMotorSpeedData["RRSpeed"]
         if "RLSpeed" in sharedMotorSpeedData.keys():
             motors.RLSpeed = sharedMotorSpeedData["RLSpeed"]
+        if "FRSpeed" in sharedMotorSpeedData.keys():
+            motors.FRSpeed = sharedMotorSpeedData["FRSpeed"]
+        if "FLSpeed" in sharedMotorSpeedData.keys():
+            motors.FLSpeed = sharedMotorSpeedData["FLSpeed"]
+        lock.release()
         motors.updateMotors()
+        time.sleep(.1)
 
 if __name__ == "__main__":
-    motorSpeedControl({"RRSpeed": 0.0, "RLSpeed": 0.0})
+    from multiprocessing import Lock
+    ThreadLock = Lock()
+    motorSpeedControl({"RRSpeed": 0, "RLSpeed": 0, "FRSpeed": 0, "FLSpeed": 0},ThreadLock)
     # motors = motors()
     # motors.stop(False)
     # for i in range(-1000, 1000, 1):
