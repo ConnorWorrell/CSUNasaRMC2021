@@ -51,5 +51,12 @@ def CommandEval(key,comm,lock):
 
 # This is called if the robot has not from the base in 3 times the ping time
 def StopEverything():
+    lock = globals.ThreadLock
+    lock.acquire()
+    globals.sharedMotorSpeedData["RLSpeed"] = 0
+    globals.sharedMotorSpeedData["RRSpeed"] = 0
+    globals.sharedMotorSpeedData["FLSpeed"] = 0
+    globals.sharedMotorSpeedData["FRSpeed"] = 0
+    lock.release()
     # print("Timedout, Stopping Everything")
     pass

@@ -41,7 +41,7 @@ def motorSpeedControl(sharedMotorSpeedData,lock):
             self.FLSpeed = 0
             # Arduinos must be flashed with Standard Firmata
             try:
-                self.ard0 = PyMata3(arduino_wait=2, com_port='COM6')  # Lattepanda onboard arduino
+                self.ard0 = PyMata3(arduino_wait=2, com_port='COM4')  # Lattepanda onboard arduino
                 # self.ard1 = PyMata3(arduino_wait=2, com_port='/dev/ttyACM1')  # Additional arduino micro
             except:
                 logging.error("Motor fail")
