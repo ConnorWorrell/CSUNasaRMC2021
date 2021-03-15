@@ -1,0 +1,2 @@
+If qr codes arn't detectable at distance, it might be a good idea to switch to aruco markers
+https://pypi.org/project/aruco/
