@@ -19,6 +19,12 @@ def initilizeGlobals():
     sharedMotorSpeedData["RLSpeed"] = 0
     sharedMotorSpeedData["FRSpeed"] = 0
     sharedMotorSpeedData["FLSpeed"] = 0
+    sharedMotorSpeedData["WormLSpeed"] = 0
+    sharedMotorSpeedData["WormRSpeed"] = 0
+    sharedMotorSpeedData["BucketSpeed"] = 0
+    sharedMotorSpeedData["ActuatorLSpeed"] = 0
+    sharedMotorSpeedData["ActuatorRSpeed"] = 0
+    sharedMotorSpeedData["BeltSpeed"] = 0
 
     # import motor
     # global motors

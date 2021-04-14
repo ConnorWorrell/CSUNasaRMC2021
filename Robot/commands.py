@@ -41,6 +41,7 @@ def CommandEval(key,comm,lock):
         globals.sharedMotorSpeedData["RRSpeed"] = float(comm[3] / 33000)
         globals.sharedMotorSpeedData["FLSpeed"] = float(comm[1] / 33000)
         globals.sharedMotorSpeedData["FRSpeed"] = float(comm[3] / 33000)
+
         lock.release()
     # elif(comm[0] == "motor"):
     #     print("Starting motor")
