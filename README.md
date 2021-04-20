@@ -10,11 +10,26 @@ Colorado State University competes in a [NASA hosted competition called Lunaboti
 | 2019-20 |                                           |
 | 2020-21 | [GitHub](https://github.com/CSU-NASA-RMC) |
 
+# The Team
+![Team Photo](/Images/RMCTeamPhoto2021.jpg)
+From left to right, top to bottom:
+Jarryd Meyers | Controls Team
+Connor Worrell | Team Lead
+Colby Richardson | Mechanics Team
+Yeshel Bin Akmal | Mechanics Team
+James Henander | Mechanics Team Lead
+Jonathan Jacobson | Controls Team Lead
+Lex Policita | Controls Team
+Kyle iccarelli | Mechanics Team
+Alden Truesdale | Mechanics Team Chief Machinist
+
+# CSU College of Engineering E-Days Video
+<iframe width="560" height="315" src="https://www.youtube.com/embed/4SlOJLiJ2u4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 # The Robot
-
+![Robot CAD](/Images/View1.png)
+![Physical Robot](/Images/RobotPhysical.jpg)
 The cad for the robot is located under \Robot CAD.
-
-![View1](/Images/View1.png)
 
 # Getting the Robot Setup
 
