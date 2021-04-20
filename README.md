@@ -24,7 +24,15 @@ Kyle iccarelli | Mechanics Team
 Alden Truesdale | Mechanics Team Chief Machinist
 
 # CSU College of Engineering E-Days Video
-<iframe width="560" height="315" src="https://www.youtube.com/embed/4SlOJLiJ2u4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<div align="center">
+      <a href="https://www.youtube.com/watch?v=4SlOJLiJ2u4" target="_blank" rel="noopener noreferrer">
+     <img 
+      src="https://img.youtube.com/vi/4SlOJLiJ2u4/0.jpg" 
+      alt="E-Days Video Presentation" 
+      style="width:100%;">
+      </a>
+</div>
 
 # The Robot
 ![Robot CAD](/Images/View1.png)
