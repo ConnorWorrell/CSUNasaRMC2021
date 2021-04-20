@@ -12,16 +12,19 @@ Colorado State University competes in a [NASA hosted competition called Lunaboti
 
 # The Team
 ![Team Photo](/Images/RMCTeamPhoto2021.jpg)
-From left to right, top to bottom:
-Jarryd Meyers | Controls Team
-Connor Worrell | Team Lead
-Colby Richardson | Mechanics Team
-Yeshel Bin Akmal | Mechanics Team
-James Henander | Mechanics Team Lead
-Jonathan Jacobson | Controls Team Lead
-Lex Policita | Controls Team
-Kyle iccarelli | Mechanics Team
-Alden Truesdale | Mechanics Team Chief Machinist
+
+Names and roles from left to right and top to bottom
+|<!-- -->|<!-- -->|
+|----------------|-------------|
+|Jarryd Meyers | Controls Team|
+|Connor Worrell | Team Lead|
+|Colby Richardson | Mechanics Team|
+|Yeshel Bin Akmal | Mechanics Team|
+|James Henander | Mechanics Team Lead|
+|Jonathan Jacobson | Controls Team Lead|
+|Lex Policita | Controls Team|
+|Kyle iccarelli | Mechanics Team|
+|Alden Truesdale | Mechanics Team Chief Machinist|
 
 # CSU College of Engineering E-Days Video
 
