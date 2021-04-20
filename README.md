@@ -14,7 +14,9 @@ Colorado State University competes in a [NASA hosted competition called Lunaboti
 
 The cad for the robot is located under \Robot CAD.
 
-![View1](/Images/View1.png)
+![Team Photo](/Images/RMCTeamPhoto2021.jpg)
+![Robot CAD](/Images/View1.png)
+![Physical Robot](/Images/RobotPhysical.jpg)
 
 # Getting the Robot Setup
 
