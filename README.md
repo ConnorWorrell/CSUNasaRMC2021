@@ -23,7 +23,7 @@ Names and roles from left to right and top to bottom
 |James Henander | Mechanics Team Lead|
 |Jonathan Jacobson | Controls Team Lead|
 |Lex Policita | Controls Team|
-|Kyle iccarelli | Mechanics Team|
+|Kyle Ciccarelli | Mechanics Team|
 |Alden Truesdale | Mechanics Team Chief Machinist|
 
 # CSU College of Engineering E-Days Video
