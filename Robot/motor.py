@@ -62,19 +62,19 @@ def motorSpeedControl(sharedMotorSpeedData,lock):
                 return
 
             # Front Left
-            self.FL = 3
+            self.FL = 5
             self.ard0.servo_config(self.FL, 1000, 2000)
 
             # Front Right
-            self.FR = 5
+            self.FR = 3
             self.ard0.servo_config(self.FR, 1000, 2000)
 
             # Rear Left
-            self.RL = 6
+            self.RL = 9
             self.ard0.servo_config(self.RL, 1000, 2000)
 
             # Rear Right
-            self.RR = 9
+            self.RR = 6
             self.ard0.servo_config(self.RR, 1000, 2000)
 
             # Left Worm screw
