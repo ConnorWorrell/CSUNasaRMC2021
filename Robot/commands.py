@@ -37,8 +37,6 @@ def CommandEval(key,comm,lock):
     if(key == 'Joystick'):
         # print("joy",key,comm)
         lock.acquire()
-        globals.sharedMotorSpeedData["RLSpeed"] = float(comm[1] / 33000)
-        globals.sharedMotorSpeedData["RRSpeed"] = float(comm[3] / 33000)
         globals.sharedMotorSpeedData["FLSpeed"] = float(comm[1] / 33000)
         globals.sharedMotorSpeedData["FRSpeed"] = float(comm[3] / 33000)
 
@@ -54,8 +52,6 @@ def CommandEval(key,comm,lock):
 def StopEverything():
     lock = globals.ThreadLock
     lock.acquire()
-    globals.sharedMotorSpeedData["RLSpeed"] = 0
-    globals.sharedMotorSpeedData["RRSpeed"] = 0
     globals.sharedMotorSpeedData["FLSpeed"] = 0
     globals.sharedMotorSpeedData["FRSpeed"] = 0
     lock.release()
