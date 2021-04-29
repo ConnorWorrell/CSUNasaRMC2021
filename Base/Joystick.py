@@ -30,7 +30,11 @@ class Joystick:
         # Remove Sync events, these don't seem to be useful, they are just duplicates of the Absolute or Key events
         prunedEvents = []
         while prunedEvents == []:
-            events = get_gamepad()
+            try:
+                events = get_gamepad()
+            except:
+                print("Joystick Lost")
+                break
             for event in events:
                 if event.ev_type != "Sync":
                     prunedEvents.append(event)
