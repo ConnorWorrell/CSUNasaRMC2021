@@ -35,50 +35,64 @@ def motorSpeedControl(sharedMotorSpeedData,lock):
         def __init__(self):
             self.status = "Initializing"
             logging.info("Initializing motor drivers")
-            self.RRSpeed = 0
-            self.RLSpeed = 0
+
             self.FRSpeed = 0
             self.FLSpeed = 0
+
+            self.WormLSpeed = 0
+            self.WormRSpeed = 0
+
+            self.BucketSpeed = 0
+
+            self.ActuatorLSpeed = 0
+
+            self.BeltSpeed = 0
+
+
             # Arduinos must be flashed with Standard Firmata
             try:
                 self.ard0 = PyMata3(arduino_wait=2, com_port='COM4')  # Lattepanda onboard arduino
+                self.ard1 = PyMata3(arduino_wait=2, com_port='COM7')  # External Arduino Uno
                 # self.ard1 = PyMata3(arduino_wait=2, com_port='/dev/ttyACM1')  # Additional arduino micro
             except:
-                logging.error("Motor fail")
+                print("On Board Arduino Connection Failed")
                 self.status = "FAIL"
                 return
+            # try:
+            #     pass
+            #     # self.ard1 = PyMata3(arduino_wait=2, com_port='COM5')  # External Arduino Uno
+            # except:
+            #     print("Arduino Connection Failed")
+            #     self.status = "FAIL"
+            #     return
 
-            # FL
-            self.FL = 3
+            # Front Left
+            self.FL = 6
             self.ard0.servo_config(self.FL, 1000, 2000)
 
-            # FR
+            # Front Right
             self.FR = 5
             self.ard0.servo_config(self.FR, 1000, 2000)
 
-            # RL
-            self.RL = 6
-            self.ard0.servo_config(self.RL, 1000, 2000)
+            # Left Worm screw
+            self.WormL = 10
+            self.ard0.servo_config(self.WormL, 1000, 2000)
 
-            # RR
-            self.RR = 9
-            self.ard0.servo_config(self.RR, 1000, 2000)
+            # Right Worm screw
+            self.WormR = 11
+            self.ard0.servo_config(self.WormR, 1000, 2000)
 
-            # Auger
-            # self.m4 = 5
-            # self.ard1.servo_config(self.m4, 1000, 2000)
+            # Bucket Motor
+            self.Bucket = 9
+            self.ard0.servo_config(self.Bucket, 1000, 2000)
 
-            # Slider
-            # self.m5 = 3
-            # self.ard1.servo_config(self.m5, 1000, 2000)
+            # Left Linear Actuator
+            self.ActuatorL = 3
+            self.ard0.servo_config(self.ActuatorL, 1000, 2000)
 
-            # Tilt-mining
-            # self.m6 = 10
-            # self.ard0.servo_config(self.m6, 1000, 2000)
-
-            # Deposit bucket
-            # self.m7 = 11
-            # self.ard0.servo_config(self.m7, 1000, 2000)
+            # Belt Motor
+            self.Belt = 13
+            self.ard0.set_pin_mode(self.Belt, Constants.PWM)
 
             self.stop()
 
@@ -86,59 +100,64 @@ def motorSpeedControl(sharedMotorSpeedData,lock):
 
         # Wheel FL
         def SetMotorFL(self, speed):
-            speed = map_sabertooth(speed * -1)
+            print("MotorFL",speed)
+            speed = map_sabertooth(speed * 1)
+            print("MotorFL", speed)
             self.ard0.analog_write(self.FL, speed)
             return
 
         # Wheel FR
         def SetMotorFR(self, speed):
-            speed = map_sabertooth(speed * -1)
+            print("MotorFR", speed)
+            speed = map_sabertooth(speed * 1)
             self.ard0.analog_write(self.FR, speed)
             return
 
-        # Wheel RL
-        def SetMotorRL(self, speed):
-            speed = map_sabertooth(speed * -1)
-            self.ard0.analog_write(self.RL, speed)
+        # Left Worm Screw
+        def SetMotorWormL(self, speed):
+            print("MotorWormL", speed)
+            speed = map_sabertooth(speed * 1)
+            self.ard0.analog_write(self.WormL, speed)
             return
 
-        # Wheel RR
-        def SetMotorRR(self, speed):
-            speed = map_sabertooth(speed * -1)
-            self.ard0.analog_write(self.RR, speed)
+        # Right Worm Screw
+        def SetMotorWormR(self, speed):
+            print("MotorWormR", speed)
+            speed = map_sabertooth(speed * 1)
+            self.ard0.analog_write(self.WormR, speed)
             return
 
-        # # Auger
-        # def aug(self, speed):
-        #     speed = map_syren(speed)
-        #     self.ard1.analog_write(self.m4, speed)
-        #     return
-        #
-        # # Slider
-        # def sld(self, speed):
-        #     speed = map_syren(speed - 0.12)  # Zero speed is slightly off
-        #     self.ard1.analog_write(self.m5, speed)
-        #     return
-        #
-        # # Tilt-mining
-        # def tlt(self, speed):
-        #     speed = map_sabertooth(speed)
-        #     self.ard0.analog_write(self.m6, speed)
-        #     return
-        #
-        # # Deposit bucket
-        # def bkt(self, speed):
-        #     speed = map_sabertooth(speed)
-        #     self.ard0.analog_write(self.m7, speed)
-        #     return
+        # Bucket
+        def SetMotorBucket(self, speed):
+            print("MotorBucket", speed)
+            speed = map_syren(speed * 1)
+            self.ard0.analog_write(self.Bucket, speed)
+            return
+
+        # Left Linear Actuator
+        def SetMotorActuatorL(self, speed):
+            print("MotorActuatorL", speed)
+            speed = map_sabertooth(speed * 1)
+            self.ard0.analog_write(self.ActuatorL, speed)
+            return
+
+        # Belt Motor
+        def SetMotorBelt(self, speed):
+            print("MotorBelt", speed)
+            # speed = map_sabertooth(speed * 1)
+            self.ard0.analog_write(self.Belt, speed*255)
+            return
 
         def stop(self, smooth=False):
             # TODO smooth stop
             logging.info("Stopping motors")
-            self.SetMotorRR(0)
-            self.SetMotorRL(0)
             self.SetMotorFR(0)
             self.SetMotorFL(0)
+            self.SetMotorWormL(0)
+            self.SetMotorWormR(0)
+            self.SetMotorBucket(0)
+            self.SetMotorActuatorL(0)
+            self.SetMotorBelt(0)
             return self.status
 
         # Map L,R tank drive to wheel number
@@ -164,22 +183,31 @@ def motorSpeedControl(sharedMotorSpeedData,lock):
                 pass
 
         def updateMotors(self):
-            motors.SetMotorRR(self.RRSpeed)
-            motors.SetMotorRL(self.RLSpeed)
             motors.SetMotorFR(self.FRSpeed)
             motors.SetMotorFL(self.FLSpeed)
+            motors.SetMotorWormL(self.WormLSpeed)
+            motors.SetMotorWormR(self.WormRSpeed)
+            motors.SetMotorBucket(self.BucketSpeed)
+            motors.SetMotorActuatorL(self.ActuatorLSpeed)
+            motors.SetMotorBelt(self.BeltSpeed)
 
     motors = motors()
     while (1):
         lock.acquire()
-        if "RRSpeed" in sharedMotorSpeedData.keys():
-            motors.RRSpeed = sharedMotorSpeedData["RRSpeed"]
-        if "RLSpeed" in sharedMotorSpeedData.keys():
-            motors.RLSpeed = sharedMotorSpeedData["RLSpeed"]
         if "FRSpeed" in sharedMotorSpeedData.keys():
             motors.FRSpeed = sharedMotorSpeedData["FRSpeed"]
         if "FLSpeed" in sharedMotorSpeedData.keys():
             motors.FLSpeed = sharedMotorSpeedData["FLSpeed"]
+        if "WormLSpeed" in sharedMotorSpeedData.keys():
+            motors.WormLSpeed = sharedMotorSpeedData["WormLSpeed"]
+        if "WormRSpeed" in sharedMotorSpeedData.keys():
+            motors.WormRSpeed = sharedMotorSpeedData["WormRSpeed"]
+        if "BucketSpeed" in sharedMotorSpeedData.keys():
+            motors.BucketSpeed = sharedMotorSpeedData["BucketSpeed"]
+        if "ActuatorLSpeed" in sharedMotorSpeedData.keys():
+            motors.ActuatorLSpeed = sharedMotorSpeedData["ActuatorLSpeed"]
+        if "BeltSpeed" in sharedMotorSpeedData.keys():
+            motors.BeltSpeed = sharedMotorSpeedData["BeltSpeed"]
         lock.release()
         motors.updateMotors()
         time.sleep(.1)
@@ -187,7 +215,7 @@ def motorSpeedControl(sharedMotorSpeedData,lock):
 if __name__ == "__main__":
     from multiprocessing import Lock
     ThreadLock = Lock()
-    motorSpeedControl({"RRSpeed": 0, "RLSpeed": 0, "FRSpeed": 0, "FLSpeed": 0},ThreadLock)
+    motorSpeedControl({"RRSpeed": 0, "RLSpeed": 0, "FRSpeed": 0, "FLSpeed": 0, "WormLSpeed": 0, "WormRSpeed": 0, "BucketSpeed": 0, "ActuatorLSpeed": 0, "ActuatorRSpeed": 0, "BeltSpeed": 0},ThreadLock)
     # motors = motors()
     # motors.stop(False)
     # for i in range(-1000, 1000, 1):

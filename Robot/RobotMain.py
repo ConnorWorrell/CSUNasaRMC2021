@@ -30,6 +30,8 @@ if __name__ == '__main__':
             r = height / float(h)
             dim = (int(w * r), height)
 
+
+
         # otherwise, the height is None
         else:
             # calculate the ratio of the width and construct the
