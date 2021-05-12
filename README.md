@@ -42,6 +42,16 @@ Names and roles from left to right and top to bottom
 ![Physical Robot](/Images/RobotPhysical.jpg)
 The cad for the robot is located under \Robot CAD.
 
+# Robot Demonstration
+<div align="center">
+      <a href="https://www.youtube.com/watch?v=TY8RnHiU3CE" target="_blank" rel="noopener noreferrer">
+     <img 
+      src="https://img.youtube.com/vi/TY8RnHiU3CE/0.jpg" 
+      alt="E-Days Video Presentation" 
+      style="width:100%;">
+      </a>
+</div>
+
 # Getting the Robot Setup
 
 ## Wire Connections
